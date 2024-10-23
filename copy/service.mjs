@@ -30,12 +30,22 @@ chrome.runtime.onInstalled.addListener(() => {
                 })?.then?.((r)=>{
                     console.log(r?.status || r);
                 })?.catch?.(console.warn.bind(console));
+            } else {
+                chrome.tabs.query({
+                    currentWindow: true,
+                    active: true,
+                })?.then?.((tabs)=>{
+                    for (const tab of tabs) {
+                        if (tab?.id != null) {
+                            chrome.tabs.sendMessage(tab?.id, {
+                                "type": "copy-as-latex"
+                            })?.then?.((r)=>{
+                                console.log(r?.status || r);
+                            })?.catch?.(console.warn.bind(console));
+                        }
+                    }
+                })?.catch?.(console.warn.bind(console));
             }
         }
     })
-
-    //
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        console.log(tabs);
-    });
 });

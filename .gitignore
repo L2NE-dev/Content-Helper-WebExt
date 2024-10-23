@@ -151,3 +151,9 @@ dist-wp/*
 ./dist/*
 ./dist-wp/
 ./dist-wp/*
+
+#
+pack/
+pack/*
+./pack/
+./pack/*

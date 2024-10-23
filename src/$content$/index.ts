@@ -42,7 +42,8 @@ const copyAsLaTeX = (target: HTMLElement)=>{
 
     //
     if (LaTeX = LaTeX?.trim()?.normalize()?.trim()) {
-        navigator.clipboard.writeText("$"+LaTeX+"$");
+        //navigator.clipboard.writeText("$"+LaTeX+"$");
+        navigator.clipboard.writeText(LaTeX);
     }
 }
 

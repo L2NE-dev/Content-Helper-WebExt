@@ -6,17 +6,38 @@ import temml from "./temml/temml.mjs";
 const ext: any = typeof chrome != 'undefined' ? chrome : (typeof browser != 'undefined' ? browser : self);
 
 //
+const dummy = (unsafe)=>{
+    return unsafe?.trim()?.replace?.(/&amp;/g, '&')
+    ?.replace?.(/&lt;/g, '<')
+    ?.replace?.(/&gt;/g, '>')
+    ?.replace?.(/&quot;/g, '"')
+    ?.replace?.(/&#39;/g, "'") || unsafe;
+}
+
+//
+const tryXML = (unsafe: string): string => {
+    const doc = new DOMParser().parseFromString(unsafe, "text/xml");
+    if (doc?.querySelector("parsererror") || !doc) {
+        return dummy(unsafe) || unsafe;
+    };
+    return doc?.documentElement?.textContent || dummy(unsafe) || unsafe;
+}
+
+//
+const serialize = (xml: any): string => {
+    const s = new XMLSerializer();
+    return typeof xml == "string" ? xml : xml?.outerHTML || s.serializeToString(xml);
+}
+
+//
 const escapeML = (unsafe: string): string => {
-    if (/&amp;|&quot;|&#39;|'&lt;|&gt;/.test(unsafe)) {
-        const doc = new DOMParser().parseFromString(unsafe, "text/xml");
-        if (doc.querySelector("parsererror")) {
-            return unsafe.replace(/&amp;/g, '&')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                        .replace(/&quot;/g, '"')
-                        .replace(/&#39;/g, "'");
+    if (/&amp;|&quot;|&#39;|&lt;|&gt;/.test(unsafe.trim())) {
+        if (unsafe?.trim()?.startsWith?.("&lt;") && unsafe?.trim()?.endsWith?.("&gt;")) {
+            return tryXML(unsafe) || unsafe;
         }
-        return doc.documentElement.textContent || unsafe;
+        if (!(unsafe?.trim()?.startsWith?.("<") && unsafe?.trim()?.endsWith?.(">"))) {
+            return dummy(unsafe) || unsafe;
+        }
     }
     return unsafe;
 }
@@ -36,13 +57,14 @@ const copyAsMathML = (target: HTMLElement)=>{
     //
     try {
         if (!mathML) {
+            // @ts-ignore
             const st = math?.outerHTML || "";
             if (!st && math) {
-                const s = new XMLSerializer();
-                const str = s.serializeToString(math);
-                mathML = str || mathML;
+                // @ts-ignore
+                const str = serialize(math);
+                mathML = escapeML(str || st || mathML);
             }
-            if (st) { mathML = st || mathML; };
+            if (st) { mathML = escapeML(st || mathML); };
         }
         if (!mathML) { const ml = mjax?.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
         if (!mathML) { const ml = expr?.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
@@ -53,18 +75,17 @@ const copyAsMathML = (target: HTMLElement)=>{
 
     //
     const original = mathML;
-    try { mathML = escapeML(temml.renderToString(mathML, {
-        throwOnError: true,
-        strict: false,
-        xml: true
-    }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
+    if (!(mathML?.trim()?.startsWith?.("<") && mathML?.trim()?.endsWith?.(">"))) {
+        try { mathML = escapeML(temml.renderToString(mathML, {
+            throwOnError: true,
+            strict: false,
+            xml: true
+        }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
+    }
     mathML ||= original;
 
     //
-    if (mathML = mathML?.trim()?.normalize()?.trim()) {
-        //navigator.clipboard.writeText("$"+LaTeX+"$");
-        navigator.clipboard.writeText(mathML);
-    }
+    if (mathML) { navigator.clipboard.writeText(mathML); }
 }
 
 // such as ChatGPT
@@ -95,11 +116,11 @@ const copyAsLaTeX = (target: HTMLElement)=>{
         if (!LaTeX) {
             const st = math?.outerHTML || "";
             if (!st && math) {
-                const s = new XMLSerializer();
-                const str = s.serializeToString(math);
-                LaTeX = str || LaTeX;
+                // @ts-ignore
+                const str = serialize(math);
+                LaTeX = escapeML(str || st || LaTeX);
             }
-            if (st) { LaTeX = st || LaTeX; };
+            if (st) { LaTeX = escapeML(st || LaTeX); };
             LaTeX = extractFromAnnotation(math) || LaTeX;
         };
     } catch (e) {
@@ -112,7 +133,7 @@ const copyAsLaTeX = (target: HTMLElement)=>{
     LaTeX ||= original;
 
     //
-    if (LaTeX = LaTeX?.trim()?.normalize()?.trim()) {
+    if (LaTeX = (LaTeX?.trim()?.normalize()?.trim() || LaTeX)) {
         //navigator.clipboard.writeText("$"+LaTeX+"$");
         navigator.clipboard.writeText(LaTeX);
     }

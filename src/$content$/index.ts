@@ -35,7 +35,7 @@ const copyAsMathML = (target: HTMLElement)=>{
 
     //
     try {
-        if (math) {
+        if (!mathML) {
             const st = math?.outerHTML || "";
             if (!st && math) {
                 const s = new XMLSerializer();
@@ -43,10 +43,10 @@ const copyAsMathML = (target: HTMLElement)=>{
                 mathML = str || mathML;
             }
             if (st) { mathML = st || mathML; };
-        } else
-        if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
-        if (expr) { const ml = expr.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
-        if (orig) { const ml = orig.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+        }
+        if (!mathML) { const ml = mjax?.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+        if (!mathML) { const ml = expr?.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+        if (!mathML) { const ml = orig?.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
     } catch (e) {
         console.warn(e);
     }
@@ -89,10 +89,10 @@ const copyAsLaTeX = (target: HTMLElement)=>{
 
     //
     try {
-        if (expr) { const ml = expr.getAttribute("data-expr") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
-        if (orig) { const ml = orig.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
-        if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
-        if (math) {
+        if (!LaTeX) { const ml = expr?.getAttribute("data-expr") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+        if (!LaTeX) { const ml = orig?.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+        if (!LaTeX) { const ml = mjax?.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+        if (!LaTeX) {
             const st = math?.outerHTML || "";
             if (!st && math) {
                 const s = new XMLSerializer();
@@ -215,6 +215,7 @@ const createCtxItems = (ext)=>{
 
 // @ts-ignore
 if (typeof browser != "undefined") {
+    // @ts-ignore
     createCtxItems(browser);
 }
 

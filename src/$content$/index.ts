@@ -55,33 +55,33 @@ const lastElement: [HTMLElement | null] = [null];
 
 //
 document.addEventListener("pointerup", (e)=>{
-    coordinate[0] = e.pageX || coordinate[0];
-    coordinate[1] = e.pageY || coordinate[1];
+    coordinate[0] = e.clientX || coordinate[0];
+    coordinate[1] = e.clientY || coordinate[1];
 });
 
 //
 document.addEventListener("contextmenu", (e)=>{
-    coordinate[0] = e.pageX || coordinate[0];
-    coordinate[1] = e.pageY || coordinate[1];
+    coordinate[0] = e.clientX || coordinate[0];
+    coordinate[1] = e.clientY || coordinate[1];
     lastElement[0] = e.target as HTMLElement;
 });
 
 //
 document.addEventListener("pointerdown", (e)=>{
-    coordinate[0] = e.pageX || coordinate[0];
-    coordinate[1] = e.pageY || coordinate[1];
+    coordinate[0] = e.clientX || coordinate[0];
+    coordinate[1] = e.clientY || coordinate[1];
 });
 
 //
 document.addEventListener("click", (e)=>{
-    coordinate[0] = e.pageX || coordinate[0];
-    coordinate[1] = e.pageY || coordinate[0];
+    coordinate[0] = e.clientX || coordinate[0];
+    coordinate[1] = e.clientY || coordinate[0];
 });
 
 //
 /*document.addEventListener("pointermove", (e)=>{
-    coordinate[0] = e.pageX;
-    coordinate[1] = e.pageX;
+    coordinate[0] = e.clientX;
+    coordinate[1] = e.clientX;
 });*/
 
 //

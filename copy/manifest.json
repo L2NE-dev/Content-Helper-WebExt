@@ -11,6 +11,11 @@
     "icons": {
         "512": "512x.png"
     },
+    "browser_specific_settings": {
+        "gecko": {
+            "strict_min_version": "56.0a1"
+        }
+    },
     "permissions": [
         "menus",
         "tabs",

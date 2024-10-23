@@ -4,9 +4,18 @@
 const ext = typeof chrome != 'undefined' ? chrome : (typeof browser != 'undefined' ? browser : self);
 
 //
-const createCtxItems = ()=>{
+const sendToContent = (info, tab)=>{
+    ext?.tabs?.sendMessage(tab?.id, {
+        "type": info.menuItemId
+    })?.then?.((r)=>{
+        console.log(r?.status || r);
+    })?.catch?.(console.warn.bind(console));
+}
+
+//
+const createCtxItems = (ext)=>{
     //
-    ext.contextMenus.create({
+    ext?.contextMenus?.create?.({
         id: 'copy-as-latex',
         title: 'Copy as LaTeX',
         visible: true,
@@ -26,7 +35,7 @@ const createCtxItems = ()=>{
     });
 
     //
-    ext.contextMenus.create({
+    ext?.contextMenus?.create?.({
         id: 'copy-as-mathml',
         title: 'Copy as MathML',
         visible: true,
@@ -46,22 +55,19 @@ const createCtxItems = ()=>{
     });
 }
 
-//
-createCtxItems();
+// @ts-ignore
+if (typeof browser != "undefined") {
+    createCtxItems(browser);
+} else {
+    ext.runtime.onInstalled.addListener(() => {
+        createCtxItems(ext);
+    });
+}
 
 //
-ext.runtime.onInstalled.addListener(() => {
-
-});
-
-//
-ext.contextMenus.onClicked.addListener((info, tab) => {
+ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
     if (tab?.id != null) {
-        ext.tabs.sendMessage(tab?.id, {
-            "type": info.menuItemId
-        })?.then?.((r)=>{
-            console.log(r?.status || r);
-        })?.catch?.(console.warn.bind(console));
+        sendToContent(info, tab);
     } else {
         ext.tabs.query({
             currentWindow: true,
@@ -69,11 +75,7 @@ ext.contextMenus.onClicked.addListener((info, tab) => {
         })?.then?.((tabs)=>{
             for (const tab of tabs) {
                 if (tab?.id != null) {
-                    ext.tabs.sendMessage(tab?.id, {
-                        "type": info.menuItemId
-                    })?.then?.((r)=>{
-                        console.log(r?.status || r);
-                    })?.catch?.(console.warn.bind(console));
+                    sendToContent(info, tab);
                 }
             }
         })?.catch?.(console.warn.bind(console));

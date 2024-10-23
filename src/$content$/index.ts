@@ -148,40 +148,90 @@ document.addEventListener("click", (e)=>{
 });
 
 //
-/*document.addEventListener("pointermove", (e)=>{
-    coordinate[0] = e.clientX;
-    coordinate[1] = e.clientX;
-});*/
-
-//
-ext.runtime.onMessage.addListener((request, sender, callback) => {
-    if (request.type == "copy-as-mathml") {
-        const element = lastElement[0] || document.elementFromPoint(...coordinate);
-        if (element) {
+const ctxAction = (request, sender, $resolve$)=>{
+    const element = lastElement[0] || document.elementFromPoint(...coordinate);
+    if (element) {
+        if (request.type == "copy-as-mathml")
             copyAsMathML(element as HTMLElement);
-            callback?.({type: "log", status: "Copied"});
-        } else {
-            callback?.({type: "log", status: "Element not detected"});
-        }
-    } else
-    if (request.type == "copy-as-latex") {
-        const element = lastElement[0] || document.elementFromPoint(...coordinate);
-        if (element) {
+        if (request.type == "copy-as-latex")
             copyAsLaTeX(element as HTMLElement);
-            callback?.({type: "log", status: "Copied"});
-        } else {
-            callback?.({type: "log", status: "Element not detected"});
-        }
+        $resolve$?.({type: "log", status: "Copied"});
     } else {
-        callback?.({type: "log", status: "Wrong command"});
+        $resolve$?.({type: "log", status: "Element not detected"});
     }
-    //console.log(request, sender, callback);
-});
+}
 
 //
+ext.runtime.onMessage.addListener(ctxAction);
 ext.runtime.sendMessage({
     type: "opened"
 }, (response)=> {
     console.log("Ready to copying");
     response?.({type: "log", status: "Ready to copying"});
+});
+
+//
+const createCtxItems = (ext)=>{
+    //
+    ext?.contextMenus?.create?.({
+        id: 'copy-as-latex',
+        title: 'Copy as LaTeX',
+        visible: true,
+        contexts: [
+            "all",
+            "page",
+            "frame",
+            "selection",
+            "link",
+            "editable",
+            "image",
+            "video",
+            "audio",
+            "page_action",
+            "action"
+        ]
+    });
+
+    //
+    ext?.contextMenus?.create?.({
+        id: 'copy-as-mathml',
+        title: 'Copy as MathML',
+        visible: true,
+        contexts: [
+            "all",
+            "page",
+            "frame",
+            "selection",
+            "link",
+            "editable",
+            "image",
+            "video",
+            "audio",
+            "page_action",
+            "action"
+        ]
+    });
+}
+
+// @ts-ignore
+if (typeof browser != "undefined") {
+    createCtxItems(browser);
+}
+
+//
+ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
+    if (tab?.id != null) {
+        ctxAction({"type": info.menuItemId}, {}, ()=>{});
+    } else {
+        ext.tabs.query({
+            currentWindow: true,
+            active: true,
+        })?.then?.((tabs)=>{
+            for (const tab of tabs) {
+                if (tab?.id != null) {
+                    ctxAction({"type": info.menuItemId}, null, ()=>{});
+                }
+            }
+        })?.catch?.(console.warn.bind(console));
+    }
 });

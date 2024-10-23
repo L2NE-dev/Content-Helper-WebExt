@@ -66,8 +66,7 @@ const bySelector = (target: HTMLElement, selector: string): HTMLElement | null =
 }
 
 
-
-
+//
 const opMap = new Map([
     ['copy-as-latex', (target: HTMLElement)=>{
         const math = bySelector(target, "math");
@@ -77,7 +76,7 @@ const opMap = new Map([
         const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
 
         //
-        let LaTeX = img?.getAttribute("alt") || "";
+        let LaTeX = img?.getAttribute("alt") || getSelection()?.toString?.() || "";
 
         //
         try {
@@ -114,7 +113,7 @@ const opMap = new Map([
         const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
 
         //
-        let mathML = img?.getAttribute?.("alt") || "";
+        let mathML = img?.getAttribute?.("alt") || getSelection()?.toString?.() || "";
 
         //
         try {

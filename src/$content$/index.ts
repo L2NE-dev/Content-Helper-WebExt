@@ -22,7 +22,15 @@ const copyAsLaTeX = (target: HTMLElement)=>{
     //
     try {
         if (mjax) { const ml = mjax.getAttribute("data-mathml"); LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
-        if (math) { LaTeX = math?.outerHTML || LaTeX; };
+        if (math) {
+            const st = math?.outerHTML || "";
+            if (!st && math) {
+                const s = new XMLSerializer();
+                const str = s.serializeToString(math);
+                LaTeX = str || LaTeX;
+            }
+            if (st) { LaTeX = st || LaTeX; };
+        };
     } catch (e) {
         console.warn(e);
     }

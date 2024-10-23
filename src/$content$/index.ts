@@ -14,6 +14,7 @@ const escapeML = (unsafe: string): string => {
 const copyAsLaTeX = (target: HTMLElement)=>{
     const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
     const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
+    const orig = target.matches("[data-original]") ? target : (target.closest("[data-original]") ?? target.querySelector("[data-original]"));//
     const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
 
     //
@@ -21,7 +22,8 @@ const copyAsLaTeX = (target: HTMLElement)=>{
 
     //
     try {
-        if (mjax) { const ml = mjax.getAttribute("data-mathml"); LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
+        if (orig) { const ml = orig.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
+        if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
         if (math) {
             const st = math?.outerHTML || "";
             if (!st && math) {

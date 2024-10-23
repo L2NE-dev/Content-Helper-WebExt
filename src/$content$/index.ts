@@ -53,15 +53,14 @@ const escapeML = (unsafe: string): string => {
 
 //
 const copyAsMathML = (target: HTMLElement)=>{
-    //"annotation"
-    const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
-    const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
-    const orig = target.matches("[data-original]") ? target : (target.closest("[data-original]") ?? target.querySelector("[data-original]"));//
-    const expr = target.matches("[data-expr]") ? target : (target.closest("[data-expr]") ?? target.querySelector("[data-expr]"));//
-    const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
+    const math = bySelector(target, "math");
+    const mjax = bySelector(target, "[data-mathml]");
+    const orig = bySelector(target, "[data-original]");
+    const expr = bySelector(target, "[data-expr]");
+    const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
 
     //
-    let mathML = img?.getAttribute("alt") || "";
+    let mathML = img?.getAttribute?.("alt") || "";
 
     //
     try {
@@ -106,13 +105,20 @@ const extractFromAnnotation = (math: any): string =>{
     return (escapeML(Q) || Q);
 }
 
+
+
+//
+const bySelector = (target: HTMLElement, selector: string): HTMLElement | null =>{
+    return (target.matches(selector) ? target : (target.closest(selector) ?? target.querySelector(selector)))
+}
+
 //
 const copyAsLaTeX = (target: HTMLElement)=>{
-    const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
-    const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
-    const orig = target.matches("[data-original]") ? target : (target.closest("[data-original]") ?? target.querySelector("[data-original]"));//
-    const expr = target.matches("[data-expr]") ? target : (target.closest("[data-expr]") ?? target.querySelector("[data-expr]"));//
-    const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
+    const math = bySelector(target, "math");
+    const mjax = bySelector(target, "[data-mathml]");
+    const orig = bySelector(target, "[data-original]");
+    const expr = bySelector(target, "[data-expr]");
+    const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
 
     //
     let LaTeX = img?.getAttribute("alt") || "";

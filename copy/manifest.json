@@ -1,13 +1,18 @@
 {
     "manifest_version": 3,
     "name": "Copy Math",
-    "description": "Copy Any Math to LaTeX",
+    "description": "Copy (almost) any math",
     "version": "1.0.0",
     "background": {
+        "scripts": ["./service.mjs"],
         "service_worker": "./service.mjs",
         "type": "module"
     },
+    "icons": {
+        "512": "512x.png"
+    },
     "permissions": [
+        "menus",
         "tabs",
         "storage",
         "activeTab",
@@ -20,6 +25,7 @@
     "host_permissions": ["<all_urls>"],
     "content_scripts": [
         {
+            "type": "module",
             "matches": [
                 "<all_urls>"
             ],

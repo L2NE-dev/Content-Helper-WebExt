@@ -2,6 +2,9 @@
 import { MathMLToLaTeX } from 'mathml-to-latex';
 import temml from "./temml/temml.mjs";
 
+// @ts-ignore
+const ext: any = typeof chrome != 'undefined' ? chrome : (typeof browser != 'undefined' ? browser : self);
+
 //
 const escapeML = (unsafe: string): string => {
     if (/&amp;|&quot;|&#39;|'&lt;|&gt;/.test(unsafe)) {
@@ -151,7 +154,7 @@ document.addEventListener("click", (e)=>{
 });*/
 
 //
-chrome.runtime.onMessage.addListener((request, sender, callback) => {
+ext.runtime.onMessage.addListener((request, sender, callback) => {
     if (request.type == "copy-as-mathml") {
         const element = lastElement[0] || document.elementFromPoint(...coordinate);
         if (element) {
@@ -176,7 +179,7 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
 });
 
 //
-chrome.runtime.sendMessage({
+ext.runtime.sendMessage({
     type: "opened"
 }, (response)=> {
     console.log("Ready to copying");

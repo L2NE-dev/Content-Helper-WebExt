@@ -16,6 +16,10 @@ export default {
             {
                 src: normalizePath(resolve(__dirname, './copy/service.mjs')),
                 dest: normalizePath(resolve(__dirname, './dist/')),
+            },
+            {
+                src: normalizePath(resolve(__dirname, './copy/512x.png')),
+                dest: normalizePath(resolve(__dirname, './dist/')),
             }]
         })
     ],

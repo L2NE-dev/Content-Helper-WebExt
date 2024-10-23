@@ -1,6 +1,6 @@
 {
-    "name": "chrome-latex-copy",
-    "description": "Chrome extensions for copy math as LaTeX",
+    "name": "chrome-math-copy",
+    "description": "Chrome and Web Extension",
     "version": "1.0.0alpha",
     "private": false,
     "type": "module",

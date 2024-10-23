@@ -14,15 +14,23 @@ const escapeML = (unsafe: string): string => {
 const copyAsLaTeX = (target: HTMLElement)=>{
     const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
     const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
+    const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
 
     //
-    let LaTeX = "";
+    let LaTeX = img?.getAttribute("alt") || "";
+
+    //
     try {
-        if (mjax) { LaTeX = MathMLToLaTeX.convert(escapeML(mjax.getAttribute("data-mathml") || "")); } else
-        if (math) { LaTeX = MathMLToLaTeX.convert(math?.outerHTML || ""); };
+        if (mjax) { const ml = mjax.getAttribute("data-mathml"); LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
+        if (math) { LaTeX = math?.outerHTML || LaTeX; };
     } catch (e) {
         console.warn(e);
     }
+
+    //
+    const original = LaTeX;
+    try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { console.warn(e); }
+    LaTeX ||= original;
 
     //
     if (LaTeX = LaTeX?.trim()?.normalize()?.trim()) {
@@ -36,33 +44,33 @@ const lastElement: [HTMLElement | null] = [null];
 
 //
 document.addEventListener("pointerup", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
+    coordinate[0] = e.pageX || coordinate[0];
+    coordinate[1] = e.pageY || coordinate[1];
 });
 
 //
 document.addEventListener("contextmenu", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
+    coordinate[0] = e.pageX || coordinate[0];
+    coordinate[1] = e.pageY || coordinate[1];
     lastElement[0] = e.target as HTMLElement;
 });
 
 //
 document.addEventListener("pointerdown", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
+    coordinate[0] = e.pageX || coordinate[0];
+    coordinate[1] = e.pageY || coordinate[1];
 });
 
 //
 document.addEventListener("click", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[0];
+    coordinate[0] = e.pageX || coordinate[0];
+    coordinate[1] = e.pageY || coordinate[0];
 });
 
 //
 /*document.addEventListener("pointermove", (e)=>{
-    coordinate[0] = e.clientX;
-    coordinate[1] = e.clientX;
+    coordinate[0] = e.pageX;
+    coordinate[1] = e.pageX;
 });*/
 
 //

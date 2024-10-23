@@ -6,18 +6,31 @@ import temml from "./temml/temml.mjs";
 const escapeML = (unsafe: string): string => {
     if (/&amp;|&quot;|&#39;|'&lt;|&gt;/.test(unsafe)) {
         const doc = new DOMParser().parseFromString(unsafe, "text/xml");
-        return doc.documentElement.textContent || "";
+        if (doc.querySelector("parsererror")) {
+            return unsafe.replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'");
+        }
+        return doc.documentElement.textContent || unsafe;
     }
     return unsafe;
 }
 
 //
+const ANC = ".katex math, math.katex";
 const copyAsMathML = (target: HTMLElement)=>{
+    //"annotation"
     const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
     const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
     const orig = target.matches("[data-original]") ? target : (target.closest("[data-original]") ?? target.querySelector("[data-original]"));//
     const expr = target.matches("[data-expr]") ? target : (target.closest("[data-expr]") ?? target.querySelector("[data-expr]"));//
     const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
+
+    // such as ChatGPT
+    const katex = target.matches(ANC) ? target : (target.closest(ANC) ?? target.querySelector(ANC));
+    const annot = katex?.querySelector?.("annotation");
 
     //
     let mathML = img?.getAttribute("alt") || "";
@@ -34,6 +47,7 @@ const copyAsMathML = (target: HTMLElement)=>{
             if (st) { mathML = st || mathML; };
         } else
         if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
+        if (annot) { const ml = (annot.textContent || "").replace(/^["'](.+(?=["']$))["']$/, '$1') || (annot.textContent || ""); mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
         if (expr) { const ml = expr.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
         if (orig) { const ml = orig.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
     } catch (e) {
@@ -64,6 +78,13 @@ const copyAsLaTeX = (target: HTMLElement)=>{
     const expr = target.matches("[data-expr]") ? target : (target.closest("[data-expr]") ?? target.querySelector("[data-expr]"));//
     const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
 
+    // such as ChatGPT
+    const katex = target.matches(ANC) ? target : (target.closest(ANC) ?? target.querySelector(ANC));
+    const annot = katex?.querySelector?.("annotation");
+
+    //
+    console.log(annot);
+
     //
     let LaTeX = img?.getAttribute("alt") || "";
 
@@ -71,6 +92,7 @@ const copyAsLaTeX = (target: HTMLElement)=>{
     try {
         if (expr) { const ml = expr.getAttribute("data-expr") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
         if (orig) { const ml = orig.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
+        if (annot) { const ml = (annot.textContent || "").replace(/^["'](.+(?=["']$))["']$/, '$1') || (annot.textContent || ""); LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
         if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; } else
         if (math) {
             const st = math?.outerHTML || "";

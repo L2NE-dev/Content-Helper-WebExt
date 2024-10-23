@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Copy as LaTeX",
+    "description": "Copy Any Math to LaTeX",
+    "version": "1.0.0",
+    "background": {
+        "service_worker": "./service.mjs",
+        "type": "module"
+    },
+    "permissions": [
+        "tabs",
+        "storage",
+        "activeTab",
+        "scripting",
+        "clipboardWrite",
+        "clipboardRead",
+        "contextMenus",
+        "nativeMessaging"
+    ],
+    "host_permissions": ["<all_urls>"],
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "./content.js"
+            ]
+        }
+    ],
+    "action": {}
+}

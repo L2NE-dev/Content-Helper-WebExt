@@ -1,5 +1,6 @@
 /// <reference types="chrome"/>
 import { MathMLToLaTeX } from 'mathml-to-latex';
+import temml from "./temml/temml.mjs";
 
 //
 const escapeML = (unsafe: string): string => {
@@ -8,6 +9,50 @@ const escapeML = (unsafe: string): string => {
         return doc.documentElement.textContent || "";
     }
     return unsafe;
+}
+
+//
+const copyAsMathML = (target: HTMLElement)=>{
+    const math = target.matches("math") ? target : (target.closest("math") ?? target.querySelector("math"));
+    const mjax = target.matches("[data-mathml]") ? target : (target.closest("[data-mathml]") ?? target.querySelector("[data-mathml]"));//
+    const orig = target.matches("[data-original]") ? target : (target.closest("[data-original]") ?? target.querySelector("[data-original]"));//
+    const expr = target.matches("[data-expr]") ? target : (target.closest("[data-expr]") ?? target.querySelector("[data-expr]"));//
+    const img = target.matches("[alt]") ? target : (target.closest("[alt]") ?? target.querySelector("[alt]"));//
+
+    //
+    let mathML = img?.getAttribute("alt") || "";
+
+    //
+    try {
+        if (math) {
+            const st = math?.outerHTML || "";
+            if (!st && math) {
+                const s = new XMLSerializer();
+                const str = s.serializeToString(math);
+                mathML = str || mathML;
+            }
+            if (st) { mathML = st || mathML; };
+        } else
+        if (mjax) { const ml = mjax.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
+        if (expr) { const ml = expr.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; } else
+        if (orig) { const ml = orig.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+    } catch (e) {
+        console.warn(e);
+    }
+
+    //
+    const original = mathML;
+    try { mathML = temml.renderToString(mathML, {
+        throwOnError: true,
+        strict: false,
+    }); } catch (e) { mathML = ""; console.warn(e); }
+    mathML ||= original;
+
+    //
+    if (mathML = mathML?.trim()?.normalize()?.trim()) {
+        //navigator.clipboard.writeText("$"+LaTeX+"$");
+        navigator.clipboard.writeText(mathML);
+    }
 }
 
 //
@@ -41,7 +86,7 @@ const copyAsLaTeX = (target: HTMLElement)=>{
 
     //
     const original = LaTeX;
-    try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { console.warn(e); }
+    try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { LaTeX = ""; console.warn(e); }
     LaTeX ||= original;
 
     //
@@ -88,6 +133,15 @@ document.addEventListener("click", (e)=>{
 
 //
 chrome.runtime.onMessage.addListener((request, sender, callback) => {
+    if (request.type == "copy-as-mathml") {
+        const element = lastElement[0] || document.elementFromPoint(...coordinate);
+        if (element) {
+            copyAsMathML(element as HTMLElement);
+            callback?.({type: "log", status: "Copied"});
+        } else {
+            callback?.({type: "log", status: "Element not detected"});
+        }
+    } else
     if (request.type == "copy-as-latex") {
         const element = lastElement[0] || document.elementFromPoint(...coordinate);
         if (element) {
@@ -97,7 +151,7 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
             callback?.({type: "log", status: "Element not detected"});
         }
     } else {
-        callback?.({type: "log", status: "Element not detected"});
+        callback?.({type: "log", status: "Wrong command"});
     }
     //console.log(request, sender, callback);
 });

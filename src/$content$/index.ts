@@ -42,10 +42,11 @@ const copyAsMathML = (target: HTMLElement)=>{
 
     //
     const original = mathML;
-    try { mathML = temml.renderToString(mathML, {
+    try { mathML = escapeML(temml.renderToString(mathML, {
         throwOnError: true,
         strict: false,
-    }); } catch (e) { mathML = ""; console.warn(e); }
+        xml: true
+    }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
     mathML ||= original;
 
     //

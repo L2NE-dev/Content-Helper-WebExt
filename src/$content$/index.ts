@@ -51,51 +51,6 @@ const escapeML = (unsafe: string): string => {
     return weak_dummy(unsafe) || unsafe;
 }
 
-//
-const copyAsMathML = (target: HTMLElement)=>{
-    const math = bySelector(target, "math");
-    const mjax = bySelector(target, "[data-mathml]");
-    const orig = bySelector(target, "[data-original]");
-    const expr = bySelector(target, "[data-expr]");
-    const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
-
-    //
-    let mathML = img?.getAttribute?.("alt") || "";
-
-    //
-    try {
-        if (!mathML) {
-            // @ts-ignore
-            const st = math?.outerHTML || "";
-            if (!st && math) {
-                // @ts-ignore
-                const str = serialize(math);
-                mathML = escapeML(str || st || mathML);
-            }
-            if (st) { mathML = escapeML(st || mathML); };
-        }
-        if (!mathML) { const ml = mjax?.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
-        if (!mathML) { const ml = expr?.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
-        if (!mathML) { const ml = orig?.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
-    } catch (e) {
-        console.warn(e);
-    }
-
-    //
-    const original = mathML;
-    if (!(mathML?.trim()?.startsWith?.("<") && mathML?.trim()?.endsWith?.(">"))) {
-        try { mathML = escapeML(temml.renderToString(mathML, {
-            throwOnError: true,
-            strict: false,
-            xml: true
-        }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
-    }
-    mathML ||= original;
-
-    //
-    if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML); }
-}
-
 // such as ChatGPT
 const extractFromAnnotation = (math: any): string =>{
     if (!math.matches(".katex math, math.katex")) return "";
@@ -105,92 +60,122 @@ const extractFromAnnotation = (math: any): string =>{
     return (escapeML(Q) || Q);
 }
 
-
-
 //
 const bySelector = (target: HTMLElement, selector: string): HTMLElement | null =>{
     return (target.matches(selector) ? target : (target.closest(selector) ?? target.querySelector(selector)))
 }
 
-//
-const copyAsLaTeX = (target: HTMLElement)=>{
-    const math = bySelector(target, "math");
-    const mjax = bySelector(target, "[data-mathml]");
-    const orig = bySelector(target, "[data-original]");
-    const expr = bySelector(target, "[data-expr]");
-    const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
 
-    //
-    let LaTeX = img?.getAttribute("alt") || "";
 
-    //
-    try {
-        if (!LaTeX) { const ml = expr?.getAttribute("data-expr") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
-        if (!LaTeX) { const ml = orig?.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
-        if (!LaTeX) { const ml = mjax?.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
-        if (!LaTeX) {
-            const st = math?.outerHTML || "";
-            if (!st && math) {
+
+const opMap = new Map([
+    ['copy-as-latex', (target: HTMLElement)=>{
+        const math = bySelector(target, "math");
+        const mjax = bySelector(target, "[data-mathml]");
+        const orig = bySelector(target, "[data-original]");
+        const expr = bySelector(target, "[data-expr]");
+        const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
+
+        //
+        let LaTeX = img?.getAttribute("alt") || "";
+
+        //
+        try {
+            if (!LaTeX) { const ml = expr?.getAttribute("data-expr") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+            if (!LaTeX) { const ml = orig?.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+            if (!LaTeX) { const ml = mjax?.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
+            if (!LaTeX) {
+                const st = math?.outerHTML || "";
+                if (!st && math) {
+                    // @ts-ignore
+                    const str = serialize(math);
+                    LaTeX = escapeML(str || st || LaTeX);
+                }
+                if (st) { LaTeX = escapeML(st || LaTeX); };
+                LaTeX = extractFromAnnotation(math) || LaTeX;
+            };
+        } catch (e) {
+            console.warn(e);
+        }
+
+        //
+        const original = LaTeX;
+        try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { LaTeX = ""; console.warn(e); }
+        LaTeX ||= original;
+
+        //navigator.clipboard.writeText("$"+LaTeX+"$");
+        if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX); }
+    }],
+    ['copy-as-mathml', (target: HTMLElement)=>{
+        const math = bySelector(target, "math");
+        const mjax = bySelector(target, "[data-mathml]");
+        const orig = bySelector(target, "[data-original]");
+        const expr = bySelector(target, "[data-expr]");
+        const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
+
+        //
+        let mathML = img?.getAttribute?.("alt") || "";
+
+        //
+        try {
+            if (!mathML) {
                 // @ts-ignore
-                const str = serialize(math);
-                LaTeX = escapeML(str || st || LaTeX);
+                const st = math?.outerHTML || "";
+                if (!st && math) {
+                    // @ts-ignore
+                    const str = serialize(math);
+                    mathML = escapeML(str || st || mathML);
+                }
+                if (st) { mathML = escapeML(st || mathML); };
             }
-            if (st) { LaTeX = escapeML(st || LaTeX); };
-            LaTeX = extractFromAnnotation(math) || LaTeX;
-        };
-    } catch (e) {
-        console.warn(e);
-    }
+            if (!mathML) { const ml = mjax?.getAttribute("data-mathml") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+            if (!mathML) { const ml = expr?.getAttribute("data-expr") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+            if (!mathML) { const ml = orig?.getAttribute("data-original") || ""; mathML = (ml ? escapeML(ml) : mathML) || mathML; }
+        } catch (e) {
+            console.warn(e);
+        }
 
-    //
-    const original = LaTeX;
-    try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { LaTeX = ""; console.warn(e); }
-    LaTeX ||= original;
+        //
+        const original = mathML;
+        if (!(mathML?.trim()?.startsWith?.("<") && mathML?.trim()?.endsWith?.(">"))) {
+            try { mathML = escapeML(temml.renderToString(mathML, {
+                throwOnError: true,
+                strict: false,
+                xml: true
+            }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
+        }
+        mathML ||= original;
 
-    //navigator.clipboard.writeText("$"+LaTeX+"$");
-    if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX); }
-}
+        //
+        if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML); }
+    }]
+]);
 
 //
 const coordinate: [number, number] = [0, 0];
 const lastElement: [HTMLElement | null] = [null];
+const saveCoordinate = (e)=>{
+    coordinate[0] = e?.clientX ?? coordinate[0];
+    coordinate[1] = e?.clientY ?? coordinate[1];
+};
 
 //
-document.addEventListener("pointerup", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
-});
-
-//
+document.addEventListener("pointerup", saveCoordinate);
+document.addEventListener("pointerdown", saveCoordinate);
+document.addEventListener("click", saveCoordinate);
 document.addEventListener("contextmenu", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
-    lastElement[0] = e.target as HTMLElement;
-});
-
-//
-document.addEventListener("pointerdown", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[1];
-});
-
-//
-document.addEventListener("click", (e)=>{
-    coordinate[0] = e.clientX || coordinate[0];
-    coordinate[1] = e.clientY || coordinate[0];
+    saveCoordinate(e);
+    lastElement[0] = (e?.target as HTMLElement || lastElement[0]);
 });
 
 //
 const ctxAction = (request, sender, $resolve$)=>{
-    const element = lastElement[0] || document.elementFromPoint(...coordinate);
-    if (element) {
-        if (request.type == "copy-as-mathml")
-            copyAsMathML(element as HTMLElement);
-        if (request.type == "copy-as-latex")
-            copyAsLaTeX(element as HTMLElement);
-        $resolve$?.({type: "log", status: "Copied"});
+    if (opMap.has(request.type)) {
+        const element = lastElement?.[0] || document.elementFromPoint(...coordinate);
+        if (element) { opMap.get(request.type)?.(element as HTMLElement); };
+        $resolve$?.({type: "log", status: element ? "Copied" : "Element not detected"});
     } else {
-        $resolve$?.({type: "log", status: "Element not detected"});
+        $resolve$?.({type: "log", status: "Operation not exists"});
     }
 }
 
@@ -205,24 +190,25 @@ ext.runtime.sendMessage({
 
 //
 const createCtxItems = (ext)=>{
+    const contexts = [
+        "all",
+        "page",
+        "frame",
+        "selection",
+        "link",
+        "editable",
+        "image",
+        "video",
+        "audio",
+        "action"
+    ];
+
     //
     ext?.contextMenus?.create?.({
         id: 'copy-as-latex',
         title: 'Copy as LaTeX',
         visible: true,
-        contexts: [
-            "all",
-            "page",
-            "frame",
-            "selection",
-            "link",
-            "editable",
-            "image",
-            "video",
-            "audio",
-            "page_action",
-            "action"
-        ]
+        contexts
     });
 
     //
@@ -230,19 +216,7 @@ const createCtxItems = (ext)=>{
         id: 'copy-as-mathml',
         title: 'Copy as MathML',
         visible: true,
-        contexts: [
-            "all",
-            "page",
-            "frame",
-            "selection",
-            "link",
-            "editable",
-            "image",
-            "video",
-            "audio",
-            "page_action",
-            "action"
-        ]
+        contexts
     });
 }
 

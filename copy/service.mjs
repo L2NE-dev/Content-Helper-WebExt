@@ -5,6 +5,7 @@ const ext = typeof chrome != 'undefined' ? chrome : (typeof browser != 'undefine
 
 //
 const sendToContent = (info, tab)=>{
+    if (tab?.id == null) return;
     ext?.tabs?.sendMessage(tab?.id, {
         "type": info.menuItemId
     })?.then?.((r)=>{
@@ -14,24 +15,26 @@ const sendToContent = (info, tab)=>{
 
 //
 const createCtxItems = (ext)=>{
+    const contexts = [
+        "all",
+        "page",
+        "frame",
+        "selection",
+        "link",
+        "editable",
+        "image",
+        "video",
+        "audio",
+        "page_action",
+        "action"
+    ];
+
     //
     ext?.contextMenus?.create?.({
         id: 'copy-as-latex',
         title: 'Copy as LaTeX',
         visible: true,
-        contexts: [
-            "all",
-            "page",
-            "frame",
-            "selection",
-            "link",
-            "editable",
-            "image",
-            "video",
-            "audio",
-            "page_action",
-            "action"
-        ]
+        contexts
     });
 
     //
@@ -39,19 +42,7 @@ const createCtxItems = (ext)=>{
         id: 'copy-as-mathml',
         title: 'Copy as MathML',
         visible: true,
-        contexts: [
-            "all",
-            "page",
-            "frame",
-            "selection",
-            "link",
-            "editable",
-            "image",
-            "video",
-            "audio",
-            "page_action",
-            "action"
-        ]
+        contexts
     });
 }
 
@@ -74,9 +65,7 @@ ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
             active: true,
         })?.then?.((tabs)=>{
             for (const tab of tabs) {
-                if (tab?.id != null) {
-                    sendToContent(info, tab);
-                }
+                sendToContent(info, tab);
             }
         })?.catch?.(console.warn.bind(console));
     }

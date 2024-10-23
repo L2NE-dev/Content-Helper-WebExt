@@ -11,6 +11,15 @@ const dummy = (unsafe)=>{
     ?.replace?.(/&lt;/g, '<')
     ?.replace?.(/&gt;/g, '>')
     ?.replace?.(/&quot;/g, '"')
+    ?.replace?.(/&nbsp;/g, " ")
+    ?.replace?.(/&#39;/g, "'") || unsafe;
+}
+
+//
+const weak_dummy = (unsafe)=>{
+    return unsafe?.trim()?.replace?.(/&amp;/g, '&')
+    ?.replace?.(/&nbsp;/g, " ")
+    ?.replace?.(/&quot;/g, '"')
     ?.replace?.(/&#39;/g, "'") || unsafe;
 }
 
@@ -20,7 +29,7 @@ const tryXML = (unsafe: string): string => {
     if (doc?.querySelector("parsererror") || !doc) {
         return dummy(unsafe) || unsafe;
     };
-    return doc?.documentElement?.textContent || dummy(unsafe) || unsafe;
+    return weak_dummy(doc?.documentElement?.textContent) || dummy(unsafe) || unsafe;
 }
 
 //
@@ -31,15 +40,15 @@ const serialize = (xml: any): string => {
 
 //
 const escapeML = (unsafe: string): string => {
-    if (/&amp;|&quot;|&#39;|&lt;|&gt;/.test(unsafe.trim())) {
+    if (/&amp;|&quot;|&#39;|&lt;|&gt;|&nbsp;/.test(unsafe.trim())) {
         if (unsafe?.trim()?.startsWith?.("&lt;") && unsafe?.trim()?.endsWith?.("&gt;")) {
-            return tryXML(unsafe) || unsafe;
+            return tryXML(unsafe) || dummy(unsafe) || unsafe;
         }
         if (!(unsafe?.trim()?.startsWith?.("<") && unsafe?.trim()?.endsWith?.(">"))) {
             return dummy(unsafe) || unsafe;
         }
     }
-    return unsafe;
+    return weak_dummy(unsafe) || unsafe;
 }
 
 //
@@ -85,7 +94,7 @@ const copyAsMathML = (target: HTMLElement)=>{
     mathML ||= original;
 
     //
-    if (mathML) { navigator.clipboard.writeText(mathML); }
+    if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML); }
 }
 
 // such as ChatGPT
@@ -132,11 +141,8 @@ const copyAsLaTeX = (target: HTMLElement)=>{
     try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { LaTeX = ""; console.warn(e); }
     LaTeX ||= original;
 
-    //
-    if (LaTeX = (LaTeX?.trim()?.normalize()?.trim() || LaTeX)) {
-        //navigator.clipboard.writeText("$"+LaTeX+"$");
-        navigator.clipboard.writeText(LaTeX);
-    }
+    //navigator.clipboard.writeText("$"+LaTeX+"$");
+    if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX); }
 }
 
 //

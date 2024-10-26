@@ -1,3 +1,4 @@
+mkdir .\pack\
 call npm run build
 call openssl genrsa -out ./pack/math.pem 2048
 call crx3 ./dist/ -p ./pack/math.pem -o ./pack/math.crx

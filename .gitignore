@@ -157,3 +157,13 @@ pack/
 pack/*
 ./pack/
 ./pack/*
+
+#
+$private$/
+$private$/*
+./$private$/
+./$private$/*
+KEY.ts
+src/$private$/KEY.ts
+src/$private$
+src/$private$/*

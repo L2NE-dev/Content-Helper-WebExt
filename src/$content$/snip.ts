@@ -5,56 +5,73 @@ let __snipInjected = false;
 let __snipActive = false;
 
 //
+const ableToShowJPEG = async (data_url: string) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = data_url;
+    await img.decode();
+    return img.width > 0 && img.height > 0;
+}
+
+//
 export const startSnip = (() => { // @ts-ignore
     if (__snipInjected) return;
     __snipInjected = true;
 
+    //
     chrome.runtime.onMessage.addListener((msg) => {
+        console.log(msg?.type);
         if (msg?.type === "START_SNIP") startSnip();
     });
 
+    //
     function startSnip() {
         if (__snipActive) return;
         __snipActive = true;
 
+        //
         const overlay = document.createElement("div");
+        overlay.draggable = false;
         overlay.style.cssText = `
 position: fixed; inset: 0; z-index: 2147483647;
 cursor: crosshair; background: rgba(0,0,0,.25);
-user-select: none; -webkit-user-select: none;`;
+user-select: none; -webkit-user-select: none; user-drag: none; -webkit-user-drag: none;`;
         overlay.tabIndex = -1;
 
+        //
         const box = document.createElement("div");
         box.style.cssText = `
 position: absolute; border: 1px solid #4da3ff;
 background: rgba(77,163,255,.2);
-pointer-events: none;`;
+pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
 
+        //
         const hint = document.createElement("div");
         hint.style.cssText = `
 position: fixed; top: 10px; right: 10px;
 background: rgba(0,0,0,.6); color: #fff;
 font: 12px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-padding: 6px 8px; border-radius: 6px;`;
+padding: 6px 8px; border-radius: 6px; pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
         hint.textContent = "Select area. Esc — cancel";
 
+        //
         const sizeBadge = document.createElement("div");
         sizeBadge.style.cssText = `
 position: absolute; transform: translateY(-100%);
 background: #1f2937; color: #fff; font: 12px/1.4 system-ui;
-padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
+padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
 
+        //
         overlay.appendChild(box);
         overlay.appendChild(hint);
         document.documentElement.appendChild(overlay);
         overlay.focus();
 
+        //
         let startX = 0, startY = 0, currX = 0, currY = 0, dragging = false;
 
-        const onKeyDown = (e) => {
-            if (e.key === "Escape") cleanup();
-        };
-
+        //
+        const onKeyDown = (e) => { if (e.key === "Escape") cleanup(); };
         const onMouseDown = (e) => {
             if (e.button !== 0) return;
             e.preventDefault();
@@ -66,8 +83,10 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
             updateBox();
             document.addEventListener("mousemove", onMouseMove, true);
             document.addEventListener("mouseup", onMouseUp, true);
+            document.addEventListener("mousecancel", onMouseCancel, true);
         };
 
+        //
         const onMouseMove = (e) => {
             if (!dragging) return;
             currX = e.clientX;
@@ -75,42 +94,89 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
             updateBox();
         };
 
+        //
+        const onMouseCancel = () => {
+            if (!dragging) return; dragging = false;
+            document.removeEventListener("mousemove", onMouseMove, true);
+            document.removeEventListener("mouseup", onMouseUp, true);
+            document.removeEventListener("mousecancel", onMouseCancel, true);
+        };
+
+        //
         const onMouseUp = async () => {
-            if (!dragging) return;
-            dragging = false;
+            if (!dragging) return; dragging = false;
             document.removeEventListener("mousemove", onMouseMove, true);
             document.removeEventListener("mouseup", onMouseUp, true);
 
+            //
             const x = Math.min(startX, currX);
             const y = Math.min(startY, currY);
             const w = Math.abs(currX - startX);
             const h = Math.abs(currY - startY);
+            console.log(x, y, w, h);
 
-            cleanupOverlayKeepFlag(); // remove overlay, but keep flag after operation
+            //
+            cleanupOverlayKeepFlag();
 
-            if (w < 2 || h < 2) {
-                __snipActive = false;
-                return; // too small area — cancel
-            }
+            //
+            if (w < 2 || h < 2) { __snipActive = false; return; }
 
+            //
+            const arrayBuffer = await captureAsPossible({ x, y, width: w, height: h })?.catch?.(err => {
+                console.warn(err);
+                return null;
+            });
+            console.log(arrayBuffer);
+            if (!arrayBuffer) { __snipActive = false; return; }; //const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+
+            // @ts-ignore
+            const data_url = `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}`;
+            if (!(await ableToShowJPEG(data_url))) { __snipActive = false; return; }
+            //await navigator.clipboard.writeText(data_url);
+
+            // open in new tab for debug
+            //window.open(data_url, "_blank");
+            //chrome.tabs.create({ url: data_url });
+
+            //
             try {
-                const arrayBuffer = await captureAsPossible({ x, y, width: w, height: h });
-                if (!arrayBuffer) return; const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+                const res: any = await chrome.runtime.sendMessage({ //@ts-ignore
+                    type: "gpt:recognize",
+                    input: [{
+                        role: "user",
+                        content: [ //@ts-ignore
+                            {type: "input_image", image_url: data_url, detail: "high"}
+                        ]
+                    }]
+                })?.catch?.(err => {
+                    console.warn(err);
+                    return null;
+                })?.then?.(res => {
+                    console.log(res);
+                    return res;
+                });
 
-                // try to copy to clipboard
-                let copied = false;
-                try {
-                    await navigator.clipboard.write([new ClipboardItem({ "image/jpeg": blob })]);
-                    copied = true;
-                    toast("Screenshot copied to clipboard");
-                } catch {
-                    // if you didn't give clipboard — just open in new tab
-                    window.open(URL.createObjectURL(blob), "_blank", "noopener");
-                    toast("Opened image in new tab");
+                //
+                if (!res || !res?.data || !res?.ok) { __snipActive = false; return; }
+
+                //
+                console.log(res);
+                console.log(res?.data);
+                if (!res?.data) { __snipActive = false; return; };
+
+                //
+                /*try { await navigator.clipboard.writeText(JSON.stringify(res?.data || {})); } catch (err) {
+                    console.warn(err);
+                    toast("Error copying to clipboard");
+                }*/
+
+                const TXT = res?.data?.output?.at?.(-1)?.content?.[0]?.text;
+                if (TXT) {
+                    try { await navigator.clipboard.writeText(TXT || ""); } catch (err) {
+                        console.warn(err); toast("Error copying to clipboard");
+                    }
                 }
 
-                // @ts-ignore // if you want to download immediately — uncomment:
-                await sendDownload("data:image/jpeg;base64,"+(new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64url" })));
             } catch (err) {
                 console.error(err);
                 toast("Error getting screenshot");
@@ -119,6 +185,7 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
             }
         };
 
+        //
         function updateBox() {
             const x = Math.min(startX, currX);
             const y = Math.min(startY, currY);
@@ -135,17 +202,20 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
             sizeBadge.style.top = "0px";
         }
 
+        //
         function cleanupOverlayKeepFlag() {
             document.removeEventListener("keydown", onKeyDown, true);
             overlay.removeEventListener("mousedown", onMouseDown, true);
             overlay.remove();
         }
 
+        //
         function cleanup() {
             cleanupOverlayKeepFlag();
             __snipActive = false;
         }
 
+        //
         function toast(text) {
             const t = document.createElement("div");
             t.textContent = text;
@@ -157,15 +227,8 @@ border-radius: 8px; font: 12px/1.4 system-ui; z-index: 2147483647;`;
             setTimeout(() => t.remove(), 1800);
         }
 
+        //
         overlay.addEventListener("mousedown", onMouseDown, true);
         document.addEventListener("keydown", onKeyDown, true);
-    }
-
-    function sendDownload(dataUrl) {
-        return new Promise((resolve) => {
-            chrome.runtime.sendMessage({ type: "DOWNLOAD", dataUrl }, (res) => {
-                resolve(res || { ok: false, error: "no response" });
-            });
-        });
     }
 })();

@@ -1,4 +1,4 @@
-import { ctxAction } from "../$content$/service";
+//import { ctxAction } from "../$content$/service";
 
 //
 export const createCtxItems = (ext)=>{
@@ -16,25 +16,72 @@ export const createCtxItems = (ext)=>{
     ];
 
     //
-    ext?.contextMenus?.create?.({
-        id: 'copy-as-latex',
-        title: 'Copy as LaTeX',
-        visible: true,
-        contexts
-    });
+    try {
+        ext?.contextMenus?.create?.({
+            id: 'copy-as-latex',
+            title: 'Copy as LaTeX',
+            visible: true,
+            contexts
+        })?.catch?.(console.warn.bind(console));
+    } catch (err) {
+        console.warn(err);
+    }
 
     //
-    ext?.contextMenus?.create?.({
-        id: 'copy-as-mathml',
-        title: 'Copy as MathML',
-        visible: true,
-        contexts
-    });
+    try {
+        ext?.contextMenus?.create?.({
+            id: 'copy-as-mathml',
+            title: 'Copy as MathML',
+            visible: true,
+            contexts
+        })?.catch?.(console.warn.bind(console));
+    } catch (err) {
+        console.warn(err);
+    }
+
+    //
+    try {
+        ext?.contextMenus?.create?.({
+            id: 'copy-as-markdown',
+            title: 'Copy as Markdown',
+            visible: true,
+            contexts
+        })?.catch?.(console.warn.bind(console));
+    } catch (err) {
+        console.warn(err);
+    }
+
+    //
+    try {
+        ext?.contextMenus?.create?.({
+            id: 'copy-as-html',
+            title: 'Copy as HTML',
+            visible: true,
+            contexts
+        })?.catch?.(console.warn.bind(console));
+    } catch (err) {
+        console.warn(err);
+    }
+
+    //
+    try {
+        ext?.contextMenus?.create?.({
+            id: 'START_SNIP',
+            title: 'Start Snip',
+            visible: true,
+            contexts
+        })?.catch?.(console.warn.bind(console));
+    } catch (err) {
+        console.warn(err);
+    }
 
     //
     ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
         if (tab?.id != null) {
-            ctxAction({"type": info.menuItemId}, {}, ()=>{});
+            //ctxAction({"type": info.menuItemId}, {}, ()=>{});
+            chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
+                console.log(message, tab.id);
+            });
         } else {
             ext.tabs.query({
                 currentWindow: true,
@@ -42,7 +89,10 @@ export const createCtxItems = (ext)=>{
             })?.then?.((tabs)=>{
                 for (const tab of tabs) {
                     if (tab?.id != null) {
-                        ctxAction({"type": info.menuItemId}, null, ()=>{});
+                        //ctxAction({"type": info.menuItemId}, null, ()=>{});
+                        chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
+                            console.log(message, tab.id);
+                        });
                     }
                 }
             })?.catch?.(console.warn.bind(console));
@@ -50,8 +100,10 @@ export const createCtxItems = (ext)=>{
     });
 }
 
+/*
 // @ts-ignore
 if (typeof browser != "undefined") {
     // @ts-ignore
     createCtxItems(browser);
 }
+*/

@@ -4,6 +4,7 @@ import { opMap } from "./operations";
 
 // action for context menu
 export const ctxAction = (request, sender, $resolve$)=>{
+    console.log(request.type);
     if (opMap.has(request.type)) {
         const element = lastElement?.[0] || document.elementFromPoint(...coordinate);
         if (element) { opMap.get(request.type)?.(element as HTMLElement); };
@@ -15,7 +16,10 @@ export const ctxAction = (request, sender, $resolve$)=>{
 
 // message exchange with context menu in service worker
 ext.runtime.onMessage.addListener(ctxAction);
-ext.runtime.sendMessage({ type: "opened" }, (response)=> {
+
+/*
+ext.runtime.sendMessage({ type: "opened" })?.then?.((message)=> {
     console.log("Ready to copying");
-    response?.({type: "log", status: "Ready to copying"});
+    console.log(message);
 });
+*/

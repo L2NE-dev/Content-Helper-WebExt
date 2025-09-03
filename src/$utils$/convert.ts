@@ -101,7 +101,7 @@ export const copyAsTeX = async (target: HTMLElement)=>{
     LaTeX ||= original;
 
     //navigator.clipboard.writeText("$"+LaTeX+"$");
-    if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX); }
+    if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX)?.catch?.((e)=> { console.warn(e); }); }
 }
 
 // copy mathml DOM as mathml
@@ -146,5 +146,10 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
     mathML ||= original;
 
     //
-    if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML); }
+    if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML)?.catch?.((e)=> { console.warn(e); }); }
 }
+
+/*
+        "default_title": "Snip",
+        "default_icon": "assets/512x.png"
+*/

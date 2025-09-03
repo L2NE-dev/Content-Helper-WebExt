@@ -4,10 +4,9 @@
     "description": "Copy (almost) any math",
     "version": "1.0.0",
     "action": {
-        "default_title": "Snip",
-        "default_icon": "assets/512x.png"
     },
     "background": {
+        "scripts": ["./src/$private$/KEY.ts", "./src/$runtime$/menu.ts", "./src/$runtime$/capture.ts", "./src/$runtime$/api.ts", "./src/$runtime$/index.ts", "./src/$utils$/core.ts", "./src/$utils$/state.ts"],
         "service_worker": "./src/$runtime$/index.ts",
         "type": "module"
     },
@@ -15,11 +14,11 @@
         "512": "assets/512x.png"
     },
     "permissions": [
-        "menus",
         "tabs",
         "storage",
         "activeTab",
         "scripting",
+        "background",
         "clipboardWrite",
         "clipboardRead",
         "contextMenus",

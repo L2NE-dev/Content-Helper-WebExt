@@ -4,36 +4,41 @@ import { encode } from "@jsquash/jpeg";
 type cropArea = { x: number, y: number, width: number, height: number }
 
 // use chrome API to capture tab visible area
-const captureTab = () => {
-    return new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: "CAPTURE" }, (res) => {
-            resolve(res || { ok: false, error: "no response" });
-        });
-    });
+const captureTab = (rect?: cropArea) => { // @ts-ignore
+    return chrome.runtime.sendMessage({ type: "CAPTURE", rect })?.then?.(res => {
+        console.log(res);
+        return (res || { ok: false, error: "no response" });
+    })?.catch?.(err => console.warn(err));
 }
 
 //
-const encodeWithJSquash = async (frameData: VideoFrame|ImageBitmap, cropRect: cropArea)=>{
+const jpegConfig = { quality: 90, progressive: false, color_space: 2, optimize_coding: true, auto_subsample: true, baseline: true };
+
+//
+const encodeWithJSquash = async (frameData: VideoFrame|ImageBitmap, rect?: cropArea)=>{
     const imageDataOptions: ImageDataSettings = {
         colorSpace: "srgb",
     }
 
+    // @ts-ignore
+    rect ??= { x: 0, y: 0, width: frameData?.width || frameData?.codedWidth || 0, height: frameData?.height || frameData?.codedHeight || 0 };
+
     //
     if (frameData instanceof ImageBitmap) {
-        const cnv = new OffscreenCanvas(cropRect.width, cropRect.height);
+        const cnv = new OffscreenCanvas(rect.width, rect.height);
         const ctx = cnv.getContext("2d");
-        ctx?.drawImage?.(frameData, cropRect.x, cropRect.y, cropRect.width, cropRect.height, 0, 0, cropRect.width, cropRect.height);
-        const idata = ctx?.getImageData?.(0, 0, cropRect.width, cropRect.height, imageDataOptions);
-        if (idata) return encode(idata);
+        ctx?.drawImage?.(frameData, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+        const idata = ctx?.getImageData?.(0, 0, rect.width, rect.height, imageDataOptions);
+        if (idata) return encode(idata, jpegConfig);
     } else { // @ts-ignore
-        const idata = new ImageData(cropRect.codedWidth, cropRect.codedHeight, imageDataOptions);
-        try { frameData?.copyTo?.(idata.data, { format: "RGBA", rect: cropRect }); } catch (e) { console.warn(e); }
-        return encode(idata);
+        const idata = new ImageData(rect.codedWidth, rect.codedHeight, imageDataOptions);
+        try { frameData?.copyTo?.(idata.data, { format: "RGBA", rect }); } catch (e) { console.warn(e); }
+        return encode(idata, jpegConfig);
     }
 }
 
 //
-export async function smartCaptureAndEncode({ x, y, width, height }: cropArea) {
+export async function smartCaptureAndEncode(rect: cropArea) {
     const stream = await navigator.mediaDevices.getDisplayMedia({ // @ts-ignore
         video: { preferCurrentTab: true },
         audio: false
@@ -56,10 +61,10 @@ export async function smartCaptureAndEncode({ x, y, width, height }: cropArea) {
     const scaleY = capH / vh;
 
     //
-    const sx = Math.max(0, Math.round(x * scaleX));
-    const sy = Math.max(0, Math.round(y * scaleY));
-    const sw = Math.max(1, Math.round(width * scaleX));
-    const sh = Math.max(1, Math.round(height * scaleY));
+    const sx = Math.max(0, Math.round(rect.x * scaleX));
+    const sy = Math.max(0, Math.round(rect.y * scaleY));
+    const sw = Math.max(1, Math.round(rect.width * scaleX));
+    const sh = Math.max(1, Math.round(rect.height * scaleY));
 
     // @ts-ignore
     const capture = new ImageCapture(track);
@@ -68,25 +73,30 @@ export async function smartCaptureAndEncode({ x, y, width, height }: cropArea) {
 
     //
     const jpegArrayBuffer = await encodeWithJSquash(bitmap, { x: sx, y: sy, width: sw, height: sh }); bitmap?.close?.();
+
+    //
     return jpegArrayBuffer;
 }
 
 //
-export const fallbackCapture = async ({ x, y, width, height }: cropArea) => {
-    const shot = await captureTab(); // @ts-ignore
-    if (!shot.ok) throw new Error(shot.error || "capture failed"); // @ts-ignore
+export const fallbackCapture = async (rect: cropArea) => {
+    const shot = await captureTab(rect); // @ts-ignore
+    if (!shot?.ok) throw new Error(shot?.error || "capture failed"); // @ts-ignore
 
     // @ts-ignore
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.fromBase64(shot.dataUrl?.replace?.(/^data:image\/png;base64,/, ""), { alphabet: "base64url" })]), x, y, width, height);
-    const arrayBuffer = await encodeWithJSquash(bitmap, { x: 0, y: 0, width: bitmap.width, height: bitmap.height });
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.fromBase64(shot?.dataUrl?.replace?.('data:image/png;base64,', ""), { alphabet: "base64" })], { type: "image/png" })/*, rect.x, rect.y, rect.width, rect.height*/);
+
+    //
+    const arrayBuffer = await encodeWithJSquash(bitmap);
     bitmap?.close?.(); return arrayBuffer;
 }
 
 //
-export const captureAsPossible = async ({ x, y, width, height }: cropArea) => {
-    try {
-        return (await smartCaptureAndEncode({ x, y, width, height }) || await fallbackCapture({ x, y, width, height }));
+export const captureAsPossible = async (rect: cropArea) => {
+    /*try {
+        return (await smartCaptureAndEncode(rect) || await fallbackCapture(rect));
     } catch {
-        return (await fallbackCapture({ x, y, width, height }));
-    }
+        return (await fallbackCapture(rect));
+    }*/
+    return (await fallbackCapture(rect));
 }

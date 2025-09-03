@@ -17,18 +17,18 @@
     ],
     "devDependencies": {
         "@crxjs/vite-plugin": "^2.2.0",
-        "@types/chrome": "^0.0.279",
-        "@types/node": "*",
-        "cbor-x": "^1.5.9",
-        "jsox": "^1.2.119",
         "@effective/eslint-config": "^5.4.7",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^12.1.0",
+        "@types/chrome": "^0.0.279",
+        "@types/node": "*",
         "autoprefixer": "^10.4.16",
+        "cbor-x": "^1.5.9",
         "clean-webpack-plugin": "^4.0.0",
         "eslint-config-prettier": "^9.1.0",
         "fflate": "^0.8.2",
         "glob": "^10.4.2",
+        "jsox": "^1.2.119",
         "marked": "^16.2.1",
         "marked-katex-extension": "^5.1.5",
         "mathml-to-latex": "^1.5.0",
@@ -47,5 +47,8 @@
         "vite-plugin-optimizer": "^1.4.3",
         "vite-plugin-singlefile": "^2.3.0",
         "vite-plugin-static-copy": "^3.1.2"
+    },
+    "dependencies": {
+        "@jsquash/jpeg": "^1.6.0"
     }
 }

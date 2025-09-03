@@ -3,7 +3,10 @@
     "name": "Copy Math",
     "description": "Copy (almost) any math",
     "version": "1.0.0",
-    "action": {},
+    "action": {
+        "default_title": "Snip",
+        "default_icon": "assets/512x.png"
+    },
     "background": {
         "service_worker": "./src/$runtime$/index.ts",
         "type": "module"
@@ -20,7 +23,9 @@
         "clipboardWrite",
         "clipboardRead",
         "contextMenus",
-        "nativeMessaging"
+        "nativeMessaging",
+        "tabCapture",
+        "downloads"
     ],
     "host_permissions": ["<all_urls>"],
     "content_scripts": [{

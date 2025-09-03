@@ -1,0 +1,171 @@
+import { captureAsPossible } from "./capapi";
+
+//
+let __snipInjected = false;
+let __snipActive = false;
+
+//
+export const startSnip = (() => { // @ts-ignore
+    if (__snipInjected) return;
+    __snipInjected = true;
+
+    chrome.runtime.onMessage.addListener((msg) => {
+        if (msg?.type === "START_SNIP") startSnip();
+    });
+
+    function startSnip() {
+        if (__snipActive) return;
+        __snipActive = true;
+
+        const overlay = document.createElement("div");
+        overlay.style.cssText = `
+position: fixed; inset: 0; z-index: 2147483647;
+cursor: crosshair; background: rgba(0,0,0,.25);
+user-select: none; -webkit-user-select: none;`;
+        overlay.tabIndex = -1;
+
+        const box = document.createElement("div");
+        box.style.cssText = `
+position: absolute; border: 1px solid #4da3ff;
+background: rgba(77,163,255,.2);
+pointer-events: none;`;
+
+        const hint = document.createElement("div");
+        hint.style.cssText = `
+position: fixed; top: 10px; right: 10px;
+background: rgba(0,0,0,.6); color: #fff;
+font: 12px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+padding: 6px 8px; border-radius: 6px;`;
+        hint.textContent = "Select area. Esc — cancel";
+
+        const sizeBadge = document.createElement("div");
+        sizeBadge.style.cssText = `
+position: absolute; transform: translateY(-100%);
+background: #1f2937; color: #fff; font: 12px/1.4 system-ui;
+padding: 2px 6px; border-radius: 4px; pointer-events: none;`;
+
+        overlay.appendChild(box);
+        overlay.appendChild(hint);
+        document.documentElement.appendChild(overlay);
+        overlay.focus();
+
+        let startX = 0, startY = 0, currX = 0, currY = 0, dragging = false;
+
+        const onKeyDown = (e) => {
+            if (e.key === "Escape") cleanup();
+        };
+
+        const onMouseDown = (e) => {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            dragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            currX = startX;
+            currY = startY;
+            updateBox();
+            document.addEventListener("mousemove", onMouseMove, true);
+            document.addEventListener("mouseup", onMouseUp, true);
+        };
+
+        const onMouseMove = (e) => {
+            if (!dragging) return;
+            currX = e.clientX;
+            currY = e.clientY;
+            updateBox();
+        };
+
+        const onMouseUp = async () => {
+            if (!dragging) return;
+            dragging = false;
+            document.removeEventListener("mousemove", onMouseMove, true);
+            document.removeEventListener("mouseup", onMouseUp, true);
+
+            const x = Math.min(startX, currX);
+            const y = Math.min(startY, currY);
+            const w = Math.abs(currX - startX);
+            const h = Math.abs(currY - startY);
+
+            cleanupOverlayKeepFlag(); // remove overlay, but keep flag after operation
+
+            if (w < 2 || h < 2) {
+                __snipActive = false;
+                return; // too small area — cancel
+            }
+
+            try {
+                const arrayBuffer = await captureAsPossible({ x, y, width: w, height: h });
+                if (!arrayBuffer) return; const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+
+                // try to copy to clipboard
+                let copied = false;
+                try {
+                    await navigator.clipboard.write([new ClipboardItem({ "image/jpeg": blob })]);
+                    copied = true;
+                    toast("Screenshot copied to clipboard");
+                } catch {
+                    // if you didn't give clipboard — just open in new tab
+                    window.open(URL.createObjectURL(blob), "_blank", "noopener");
+                    toast("Opened image in new tab");
+                }
+
+                // @ts-ignore // if you want to download immediately — uncomment:
+                await sendDownload("data:image/jpeg;base64,"+(new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64url" })));
+            } catch (err) {
+                console.error(err);
+                toast("Error getting screenshot");
+            } finally {
+                __snipActive = false;
+            }
+        };
+
+        function updateBox() {
+            const x = Math.min(startX, currX);
+            const y = Math.min(startY, currY);
+            const w = Math.abs(currX - startX);
+            const h = Math.abs(currY - startY);
+            box.style.left = x + "px";
+            box.style.top = y + "px";
+            box.style.width = w + "px";
+            box.style.height = h + "px";
+
+            sizeBadge.textContent = `${Math.max(0, Math.round(w))} × ${Math.max(0, Math.round(h))}`;
+            if (!sizeBadge.isConnected) box.appendChild(sizeBadge);
+            sizeBadge.style.left = "0px";
+            sizeBadge.style.top = "0px";
+        }
+
+        function cleanupOverlayKeepFlag() {
+            document.removeEventListener("keydown", onKeyDown, true);
+            overlay.removeEventListener("mousedown", onMouseDown, true);
+            overlay.remove();
+        }
+
+        function cleanup() {
+            cleanupOverlayKeepFlag();
+            __snipActive = false;
+        }
+
+        function toast(text) {
+            const t = document.createElement("div");
+            t.textContent = text;
+            t.style.cssText = `
+position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+background: rgba(0,0,0,.8); color: #fff; padding: 8px 12px;
+border-radius: 8px; font: 12px/1.4 system-ui; z-index: 2147483647;`;
+            document.documentElement.appendChild(t);
+            setTimeout(() => t.remove(), 1800);
+        }
+
+        overlay.addEventListener("mousedown", onMouseDown, true);
+        document.addEventListener("keydown", onKeyDown, true);
+    }
+
+    function sendDownload(dataUrl) {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage({ type: "DOWNLOAD", dataUrl }, (res) => {
+                resolve(res || { ok: false, error: "no response" });
+            });
+        });
+    }
+})();

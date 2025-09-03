@@ -4,8 +4,8 @@
     "description": "Copy (almost) any math",
     "version": "1.0.0",
     "background": {
-        "scripts": ["./service.mjs"],
-        "service_worker": "./service.mjs",
+        "scripts": ["./runtime.mjs"],
+        "service_worker": "./runtime.mjs",
         "type": "module"
     },
     "icons": {

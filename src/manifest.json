@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "Copy Math",
+    "description": "Copy (almost) any math",
+    "version": "1.0.0",
+    "action": {},
+    "background": {
+        "service_worker": "./src/$runtime$/index.ts",
+        "type": "module"
+    },
+    "icons": {
+        "512": "assets/512x.png"
+    },
+    "permissions": [
+        "menus",
+        "tabs",
+        "storage",
+        "activeTab",
+        "scripting",
+        "clipboardWrite",
+        "clipboardRead",
+        "contextMenus",
+        "nativeMessaging"
+    ],
+    "host_permissions": ["<all_urls>"],
+    "content_scripts": [{
+        "type": "module",
+        "matches": ["<all_urls>"],
+        "js": ["./src/$content$/index.ts"]
+    }]
+}

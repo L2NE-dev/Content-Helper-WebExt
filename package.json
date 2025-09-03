@@ -1,30 +1,26 @@
 {
-    "name": "chrome-math-copy",
+    "name": "chrome-content-helper",
     "description": "Chrome and Web Extension",
     "version": "1.0.0alpha",
     "private": false,
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "worker": "vite build",
-        "watch": "vite watch --config vite.config.js",
-        "build": "vite build --config vite.config.js",
-        "build-wp": "webpack build --mode=production",
-        "preview": "vite preview",
-        "test": "deno run --allow-all ./test/Host.ts"
+        "dev": "vite --config vite.config.ts",
+        "worker": "vite build --config vite.config.ts",
+        "watch": "vite build --watch --config vite.config.ts",
+        "build": "vite build --config vite.config.ts",
+        "preview": "vite preview"
     },
     "browserslist": [
         "last 1 chrome version",
         "last 1 firefox version"
     ],
-    "dependencies": {
+    "devDependencies": {
+        "@crxjs/vite-plugin": "^2.2.0",
         "@types/chrome": "^0.0.279",
         "@types/node": "*",
         "cbor-x": "^1.5.9",
         "jsox": "^1.2.119",
-        "mathml-to-latex": "^1.4.1"
-    },
-    "devDependencies": {
         "@effective/eslint-config": "^5.4.7",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^12.1.0",
@@ -33,25 +29,23 @@
         "eslint-config-prettier": "^9.1.0",
         "fflate": "^0.8.2",
         "glob": "^10.4.2",
+        "marked": "^16.2.1",
+        "marked-katex-extension": "^5.1.5",
+        "mathml-to-latex": "^1.5.0",
         "rimraf": "^5.0.7",
         "sass": "^1.77.6",
+        "temml": "^0.11.10",
         "terser": "^5.34.1",
         "terser-webpack-plugin": "^5.3.10",
         "ts-loader": "^9.5.1",
+        "turndown": "^7.2.1",
         "typescript": "^5.6.3",
-        "vite": "^5.4.8",
+        "vite": "^7.1.4",
         "vite-plugin-compression2": "^1.3.0",
         "vite-plugin-dynamic-import": "^1.6.0",
-        "vite-plugin-minify": "^2.0.0",
+        "vite-plugin-minify": "^2.1.0",
         "vite-plugin-optimizer": "^1.4.3",
-        "vite-plugin-singlefile": "^2.0.2",
-        "vite-plugin-static-copy": "^2.0.0",
-        "webpack": "^5.95.0",
-        "webpack-cli": "^5.1.4"
-    },
-    "pnpm": {
-        "overrides": {
-            "vite": "link:../vite/packages/vite"
-        }
+        "vite-plugin-singlefile": "^2.3.0",
+        "vite-plugin-static-copy": "^3.1.2"
     }
 }

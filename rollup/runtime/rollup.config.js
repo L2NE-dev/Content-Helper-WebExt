@@ -1,5 +1,3 @@
-import terserOptions from "../shared.config"
-import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import { compression } from 'vite-plugin-compression2';
 import optimizer from 'vite-plugin-optimizer';
@@ -28,7 +26,7 @@ export const TSConfig = {
         "inlineSourceMap": true,
         "sourceMap": false,
         "outDir": "./dist/",
-        "declarationDir": "./dist/service.d.ts/",
+        "declarationDir": "./dist/runtime.d.ts/",
         "types": ["chrome"]
     }
 };
@@ -36,18 +34,17 @@ export const TSConfig = {
 //
 export const plugins = [
     typescript(TSConfig),
-    terser(terserOptions),
     optimizer({}),
     compression(),
 ];
 
 //
-export const NAME = "service";
+export const NAME = "runtime";
 export const rollupOptions = {
     plugins: [...plugins],
     treeshake: 'smallest',
     external: [],
-    input: "./src/$service$/index.ts",
+    input: "./src/$runtime$/index.ts",
     output: {
         //preserveModules: true,
         minifyInternalExports: true,

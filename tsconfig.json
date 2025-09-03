@@ -5,6 +5,7 @@
         "target": "ESNext",
         "module": "ESNext",
         "lib": ["ESNext", "DOM", "WebWorker"],
+        "moduleResolution": "bundler",
         "esModuleInterop": true,
         "strict": true,
         "forceConsistentCasingInFileNames": true,

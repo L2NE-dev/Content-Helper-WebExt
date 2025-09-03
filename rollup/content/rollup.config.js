@@ -1,8 +1,4 @@
-
-
 import {resolve} from "node:path";
-import terserOptions from "../shared.config"
-import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import { compression } from 'vite-plugin-compression2';
 import optimizer from 'vite-plugin-optimizer';
@@ -38,7 +34,6 @@ export const TSConfig = {
 //
 export const plugins = [
     typescript(TSConfig),
-    terser(terserOptions),
     optimizer({}),
     compression()
 ];
@@ -65,4 +60,5 @@ export const rollupOptions = {
 	}
 };
 
+//
 export default rollupOptions;

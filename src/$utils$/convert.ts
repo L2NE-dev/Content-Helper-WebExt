@@ -54,14 +54,14 @@ export const convertToMarkdown = (input: string): string => { // convert html DO
 // copy html DOM as markdown
 export const copyAsMarkdown = async (target: HTMLElement)=>{ // copy html DOM as markdown
     const container = getContainerFromTextSelection(target);
-    const markdown = convertToMarkdown(container?.innerHTML || "");
+    const markdown = convertToMarkdown(container?.innerHTML || container?.outerHTML || "");
     if (markdown?.trim()) { navigator.clipboard.writeText(markdown?.trim?.()?.normalize?.()?.trim?.() || markdown?.trim?.() || markdown); }
 }
 
 // copy markdown text as html
 export const copyAsHTML = async (target: HTMLElement)=>{ // copy markdown text as html
     const container = getContainerFromTextSelection(target);
-    const html = await convertToHtml(container?.innerText || "");
+    const html = await convertToHtml(container?.innerText || "") || await convertToHtml(container?.innerHTML || container?.outerHTML || "");
     if (html?.trim()) { navigator.clipboard.writeText(html?.trim?.()?.normalize?.()?.trim?.() || html?.trim?.() || html); }
 }
 
@@ -82,7 +82,7 @@ export const copyAsTeX = async (target: HTMLElement)=>{
         if (!LaTeX) { const ml = orig?.getAttribute("data-original") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
         if (!LaTeX) { const ml = mjax?.getAttribute("data-mathml") || ""; LaTeX = (ml ? escapeML(ml) : LaTeX) || LaTeX; }
         if (!LaTeX) {
-            const st = math?.outerHTML || "";
+            const st = math?.innerHTML || math?.outerHTML || "";
             if (!st && math) {
                 // @ts-ignore
                 const str = serialize(math);
@@ -119,7 +119,7 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
     try {
         if (!mathML) {
             // @ts-ignore
-            const st = math?.outerHTML || "";
+            const st = math?.innerHTML || math?.outerHTML || "";
             if (!st && math) {
                 // @ts-ignore
                 const str = serialize(math);
@@ -148,8 +148,3 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
     //
     if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML)?.catch?.((e)=> { console.warn(e); }); }
 }
-
-/*
-        "default_title": "Snip",
-        "default_icon": "assets/512x.png"
-*/

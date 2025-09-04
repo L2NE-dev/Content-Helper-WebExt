@@ -19,11 +19,11 @@ In recognited from image data (what you seen in image), do:
 - If image, format as [$image$]($image$)
 - If code, format as \`\`\`$code$\`\`\`
 - If JSON, format as JSON string.
-- If phone number, format as as correct phone number.
-- If email, format as as correct email.
-- If URL, format as as correct URL.
-- If date, format as as correct date.
-- If time, format as as correct time.
+- If phone number, format as as correct phone number (in normalized format).
+- If email, format as as correct email (in normalized format).
+- If URL, format as as correct URL (in normalized format).
+- If date, format as as correct date (in normalized format).
+- If time, format as as correct time (in normalized format).
 - If other, format as $text$.
 
 If nothing found, return "No data recognized".

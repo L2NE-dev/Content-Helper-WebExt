@@ -4,7 +4,7 @@ setApiKey?.();
 //
 const API_BASE = 'https://api.proxyapi.ru/openai/v1/'//'https://openai.api.proxyapi.ru/';
 const ENDPOINT = 'responses';
-const MODEL = 'gpt-5';
+const MODEL = 'gpt-5-mini';
 
 //
 const INSTRUCTION = `

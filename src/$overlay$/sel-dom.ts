@@ -11,21 +11,24 @@ export const selDom = () => {
     //
     const box = document.createElement("div");
     box.className = "sel-dom-box";
+    box.tabIndex = -1;
 
     //
     const hint = document.createElement("div");
     hint.className = "sel-dom-hint";
     hint.textContent = "Select area. Esc — cancel";
+    hint.tabIndex = -1;
 
     //
     const sizeBadge = document.createElement("div");
     sizeBadge.className = "sel-dom-size-badge";
     sizeBadge.textContent = "";
+    sizeBadge.tabIndex = -1;
 
     //
     const toast = document.createElement("div");
     toast.className = "sel-dom-toast";
-    //
+    toast.tabIndex = -1;
 
     //
     box.appendChild(sizeBadge);

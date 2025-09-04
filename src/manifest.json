@@ -4,6 +4,7 @@
     "description": "Copy (almost) any math",
     "version": "1.0.0",
     "action": {
+        "default_popup": "./src/$popup$/index.html"
     },
     "background": {
         "scripts": ["./src/$private$/KEY.ts", "./src/$runtime$/menu.ts", "./src/$runtime$/capture.ts", "./src/$runtime$/api.ts", "./src/$runtime$/index.ts", "./src/$utils$/core.ts", "./src/$utils$/state.ts"],

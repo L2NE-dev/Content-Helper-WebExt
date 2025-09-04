@@ -1,6 +1,5 @@
 import { encodeWithJSquash, type cropArea } from "../$utils$/compress";
 
-
 //
 export async function smartCaptureAndEncode(rect: cropArea) {
     const stream = await navigator.mediaDevices.getDisplayMedia({ // @ts-ignore

@@ -23,8 +23,6 @@ const ableToShowJPEG = async (data_url: string) => { // @ts-ignore
     return bitmap?.width > 0 && bitmap?.height > 0;
 }
 
-
-
 //
 const COPY_HACK = (ext, data, tabId?)=>{
     return ext.tabs.query({

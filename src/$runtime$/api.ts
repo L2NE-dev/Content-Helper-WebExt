@@ -2,9 +2,9 @@ import { setApiKey } from "../$private$/KEY";
 setApiKey?.();
 
 //
-const API_BASE = 'https://api.proxyapi.ru/openai/v1/'//'https://openai.api.proxyapi.ru/';
+const DEFAULT_MODEL = 'gpt-5-mini';
+const DEFAULT_API_URL = 'https://api.proxyapi.ru/openai/v1/';
 const ENDPOINT = 'responses';
-const MODEL = 'gpt-5-mini';
 
 //
 const INSTRUCTION = `
@@ -15,9 +15,9 @@ In recognition result, do not include image itself.
 In recognited from image data (what you seen in image), do:
 - If textual content, format as Markdown string (multiline).
 - If math (expression, equation, formula), format as $KaTeX$
-- If table, format as |$table$|
+- If table (or looks alike table), format as | table |
 - If image, format as [$image$]($image$)
-- If code, format as \`\`\`$code$\`\`\`
+- If code, format as \`\`\`$code$\`\`\` (multiline) or \`$code$\` (single-line)
 - If JSON, format as JSON string.
 - If phone number, format as as correct phone number (in normalized format).
 - If email, format as as correct email (in normalized format).
@@ -25,6 +25,7 @@ In recognited from image data (what you seen in image), do:
 - If date, format as as correct date (in normalized format).
 - If time, format as as correct time (in normalized format).
 - If other, format as $text$.
+- If seen alike list, format as list (in markdown format).
 
 If nothing found, return "No data recognized".
 `;
@@ -33,17 +34,18 @@ If nothing found, return "No data recognized".
 export const recognizeImage = async (msg, sendResponse?) => {
     const { input } = msg;
     const token = (await chrome.storage.local.get('apiKey'))?.apiKey;
-    if (!token) return sendResponse?.({ ok: false, error: "No API key" });
+    if (!token) return sendResponse?.({ ok: false, error: "No API key or input" });
+    if (!input) return sendResponse?.({ ok: false, error: "No input provided" });
 
     //
-    const r: any = await fetch(`${API_BASE}${ENDPOINT}`, {
+    const r: any = await fetch(`${(await chrome.storage.local.get('apiUrl'))?.apiUrl || DEFAULT_API_URL}${ENDPOINT}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-            model: MODEL, // ваш
+            model: (await chrome.storage.local.get('model'))?.model || DEFAULT_MODEL, // ваш
             input,
             reasoning: { effort: "low" },
             //temperature: 0.2,

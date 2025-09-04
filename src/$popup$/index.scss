@@ -1,0 +1,313 @@
+@layer webext-popup {
+    html, body {
+        margin: 0;
+        padding: 0;
+        border: none;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    :where(*) {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border: none;
+        outline: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        cursor: default;
+    }
+
+    html {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    body {
+        font: 14px/1.4 system-ui;
+        inline-size: max-content;
+        block-size: max-content;
+        min-inline-size: 330px;
+        background: transparent;
+        background-color: transparent;
+        background-image: none;
+    }
+
+    #app {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        place-content: center;
+        place-items: center;
+        text-align: start;
+    }
+
+    h1 {
+        display: flex;
+        flex-direction: row;
+        place-content: center;
+        place-items: center;
+
+        text-wrap: nowrap;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        inline-size: stretch;
+        block-size: max-content;
+
+        font: inherit;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        //
+        place-content: center;
+        place-items: center;
+
+        //
+        inline-size: stretch;
+        block-size: max-content;
+    }
+
+    ul {
+        display: grid;
+        grid-template-columns: [label] minmax(0px, max-content) [input] minmax(0px, 1fr) [checkbox] minmax(0px, max-content);
+        grid-auto-flow: row;
+        grid-auto-rows: max-content;
+
+        gap: 8px;
+
+        inline-size: stretch;
+        block-size: max-content;
+        text-align: center;
+
+        place-content: center;
+        place-items: center;
+    }
+
+    li {
+        display: grid;
+        flex-direction: row;
+        gap: 4px;
+
+        grid-column: 1 / -1;
+        grid-row: auto;
+        grid-template-columns: subgrid;
+
+        inline-size: stretch;
+        block-size: max-content;
+        text-align: center;
+
+        place-content: center;
+        place-items: center;
+
+        // is has no 3rd child
+        &:not(:has(:nth-child(3))) {
+            // input should span 2 columns
+            input[type="url"], input[type="password"], input[type="text"] {
+                grid-column: 2 / 3 span;
+            }
+        }
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: 600;
+
+        grid-column: label;
+        grid-row: auto;
+
+        text-wrap: nowrap;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-basis: max-content;
+        min-inline-size: max-content;
+        inline-size: max-content;
+        block-size: max-content;
+        max-inline-size: stretch;
+        text-align: start;
+    }
+
+    input[type="checkbox"] {
+        grid-column: checkbox;
+        grid-row: auto;
+
+        border: none;
+        outline: none;
+        background: #f5f5f5;
+        color: #000;
+        font: 14px/1.4 system-ui;
+        cursor: pointer;
+        display: flex;
+        border-radius: 4px;
+        padding: 2px;
+        inline-size: 1.5rem;
+        block-size: 1.5rem;
+        max-inline-size: stretch;
+        text-align: start;
+        box-sizing: border-box;
+        aspect-ratio: 1 / 1;
+
+        place-content: center;
+        place-items: center;
+
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        overflow: hidden;
+        contain: strict;
+
+        line-height: 0;
+
+        //
+        &::before {
+            content: "";
+            content: var(--for-show-icon, "");
+
+            line-height: 0;
+
+            display: flex;
+            flex-direction: row;
+            place-content: center;
+            place-items: center;
+
+            inline-size: stretch;
+            block-size: stretch;
+
+            max-inline-size: stretch;
+            max-block-size: stretch;
+            box-sizing: border-box;
+
+            object-fit: contain;
+            object-position: center;
+
+            contain-intrinsic-inline-size: 16px;
+            contain-intrinsic-block-size: 16px;
+
+            aspect-ratio: 1 / 1;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        //
+        &:checked {
+            background: #000;
+            color: #fff;
+            fill: #fff;
+            stroke: #fff;
+
+            //
+            &::before {
+                content: "✓";
+                content: var(--for-hide-icon, "✓");
+            }
+        }
+
+        //
+        &:focus-visible {
+            box-shadow: 0 0 3px #0005;
+        }
+
+        //
+        &:focus {
+            box-shadow: 0 0 3px #0006;
+        }
+    }
+
+    input[type="url"], input[type="password"], input[type="text"] {
+        grid-column: input;
+        grid-row: auto;
+        user-select: text;
+        -webkit-user-select: text;
+        -webkit-user-drag: text;
+        pointer-events: auto;
+
+        text-align: start;
+        inline-size: stretch;
+        block-size: max-content;
+        padding: 8px 8px;
+        border-radius: 4px;
+        border: none;
+        background: #f5f5f5;
+        color: #000;
+        font: 14px/1.4 system-ui;
+        cursor: text;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+
+        text-wrap: nowrap;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        font-family: monospace;
+        font-size: 10px;
+
+        text-spacing-trim: normal;
+        text-spacing-trim: trim-start;
+        text-spacing-trim: trim-both;
+
+        &:focus-visible {
+            box-shadow: 0 0 3px #0005 inset;
+        }
+
+        &:focus {
+            box-shadow: 0 0 3px #0006 inset;
+        }
+    }
+
+    button {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        background: #000;
+        color: #fff;
+        font: 14px/1.4 system-ui;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+
+        place-content: center;
+        place-items: center;
+
+        text-wrap: nowrap;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        inline-size: max-content;
+        max-inline-size: stretch;
+        block-size: max-content;
+        text-align: center;
+
+        &:focus-visible {
+            outline: 1px solid #fff5;
+            outline-offset: -1px;
+            box-shadow: 0 0 3px #0005;
+        }
+
+        &:focus {
+            outline: 1px solid #fff5;
+            outline-offset: -1px;
+            box-shadow: 0 0 3px #0006;
+        }
+    }
+
+}

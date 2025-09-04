@@ -95,7 +95,7 @@ export const startSnip = (() => { // @ts-ignore
             });
 
             //
-            if (res?.ok) showToast("Copying is done!");
+            showToast(res?.ok ? "Copying is done" : "Failed to copy");
 
             //await navigator.clipboard.writeText(data_url);
 

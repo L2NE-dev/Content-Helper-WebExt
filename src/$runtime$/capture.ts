@@ -82,9 +82,8 @@ export const enableCapture = (ext) => {
                         });
 
                         //
-                        await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id);
-                        const output = {ok: res?.ok, data: res?.data};
-                        sendResponse(output); return output;
+                        await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id)?.catch?.(console.warn.bind(console));
+                        sendResponse(res); return res;
                     }
                 }
             );

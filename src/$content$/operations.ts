@@ -1,5 +1,4 @@
 import { copyAsHTML, copyAsMathML, copyAsMarkdown, copyAsTeX } from "../$utils$/convert";
-import { startSnip } from "./snip";
 
 //
 export const opMap = new Map([

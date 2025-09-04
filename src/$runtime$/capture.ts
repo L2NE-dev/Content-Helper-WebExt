@@ -13,18 +13,78 @@ chrome.action.onClicked.addListener(async (tab) => {
     }
 });*/
 
+//
+import { encodeWithJSquash } from "../$utils$/compress";
+import { recognizeImage } from "./api";
+
+//
+const ableToShowJPEG = async (data_url: string) => { // @ts-ignore
+    const bitmap: any = await createImageBitmap(new Blob([Uint8Array.fromBase64(data_url?.replace?.('data:image/jpeg;base64,', ""), { alphabet: "base64" })], { type: "image/png" }))?.catch?.(e => { console.warn(e); return null; });
+    return bitmap?.width > 0 && bitmap?.height > 0;
+}
+
+
+
+//
+const COPY_HACK = (ext, data, tabId?)=>{
+    return ext.tabs.query({
+        currentWindow: true,
+        lastFocusedWindow: true,
+        active: true,
+    })?.then?.((tabs)=>{
+        for (const tab of tabs) {
+            if (tab?.id != null) {
+                //ctxAction({"type": info.menuItemId}, null, ()=>{});
+                return chrome.tabs.sendMessage?.(tab.id, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console));
+            }
+        }
+    })?.catch?.(console.warn.bind(console));
+
+    //
+    if (tabId) { return chrome.tabs.sendMessage?.(tabId, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console)); }
+}
+
+
+
 // service worker makes screenshot of visible area
 export const enableCapture = (ext) => {
     ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg?.type === "CAPTURE") {
             const windowId = sender?.tab?.windowId; //@ts-ignore
             chrome.tabs.captureVisibleTab({ format: "png", scale: 1, rect: msg.rect ?? {x: 0, y: 0, width: 0, height: 0} },
-                (dataUrl) => { // @ts-ignore
+                async ($dataUrl) => { // @ts-ignore
                     if (chrome.runtime.lastError) {
                         console.error(chrome.runtime.lastError);
                         sendResponse({ ok: false, error: chrome.runtime.lastError.message });
                     } else {
-                        sendResponse({ ok: true, dataUrl });
+                        // @ts-ignore
+                        const bitmap = await createImageBitmap(new Blob([Uint8Array.fromBase64($dataUrl?.replace?.('data:image/png;base64,', ""), { alphabet: "base64" })], { type: "image/png" })/*, rect.x, rect.y, rect.width, rect.height*/);
+                        const arrayBuffer = await encodeWithJSquash(bitmap) // @ts-ignore
+                        const dataUrl = `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}`;
+                        //sendResponse({ ok: true, dataUrl });
+                        bitmap?.close?.();
+
+                        //
+                        if (!dataUrl || !(await ableToShowJPEG(dataUrl))) {
+                            sendResponse({ ok: false, error: "Unable to show JPEG" });
+                            return;
+                        }
+
+                        //
+                        const res = await recognizeImage({ //@ts-ignore
+                            //type: "gpt:recognize",
+                            input: [{
+                                role: "user",
+                                content: [ //@ts-ignore
+                                    {type: "input_image", image_url: dataUrl, detail: "high"}
+                                ]
+                            }]
+                        });
+
+                        //
+                        await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id);
+                        const output = {ok: res?.ok, data: res?.data};
+                        sendResponse(output); return output;
                     }
                 }
             );

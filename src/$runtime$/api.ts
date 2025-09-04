@@ -30,46 +30,50 @@ If nothing found, return "No data recognized".
 `;
 
 //
+export const recognizeImage = async (msg, sendResponse?) => {
+    const { input } = msg;
+    const token = (await chrome.storage.local.get('apiKey'))?.apiKey; console.log(token);
+    if (!token) return sendResponse?.({ ok: false, error: "No API key" });
+
+    //
+    const r: any = await fetch(`${API_BASE}${ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            model: MODEL, // ваш
+            input,
+            reasoning: { effort: "low" },
+            //temperature: 0.2,
+            instructions: INSTRUCTION
+        })
+    })?.catch?.(e => {
+        console.warn(e);
+        return { ok: false, error: String(e) };
+    });
+
+    //
+    const data = await r?.json?.()?.catch?.((e) => {
+        console.warn(e);
+        return { ok: false, error: String(e) };
+    }) || {}; console.log(data);
+
+    //
+    const output = { ok: r?.ok, data };
+    sendResponse?.(output);
+    return output;
+}; // async response
+
+//
 export const enableGptApi = (ext) => {
     ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg.type !== 'gpt:recognize') return;
-
-        //
-        (async function() {
-            const { input } = msg;
-            const token = (await chrome.storage.local.get('apiKey'))?.apiKey; console.log(token);
-            if (!token) return sendResponse({ ok: false, error: "No API key" });
-
-            //
-            const r: any = await fetch(`${API_BASE}${ENDPOINT}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    model: MODEL, // ваш
-                    input,
-                    reasoning: { effort: "low" },
-                    //temperature: 0.2,
-                    instructions: INSTRUCTION
-                })
-            })?.catch?.(e => {
-                console.warn(e);
-                return { ok: false, error: String(e) };
-            });
-
-            //
-            const data = await r?.json?.()?.catch?.((e) => {
-                console.warn(e);
-                return { ok: false, error: String(e) };
-            }) || {}; console.log(data);
-
-            //
-            sendResponse({ ok: r?.ok, data });
-        })(); return true; // async response
+        recognizeImage(msg, sendResponse);
+        return true;
     });
-}
+};
 
 //const res = await chrome.runtime.sendMessage({ type: 'gpt:complete', prompt: '...' });
 

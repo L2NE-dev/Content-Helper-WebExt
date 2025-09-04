@@ -1,16 +1,15 @@
-import { captureAsPossible } from "./capapi";
+import type { cropArea } from "../$utils$/compress";
 
 //
 let __snipInjected = false;
 let __snipActive = false;
 
-//
-const ableToShowJPEG = async (data_url: string) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.src = data_url;
-    await img.decode();
-    return img.width > 0 && img.height > 0;
+// use chrome API to capture tab visible area
+const captureTab = (rect?: cropArea) => { // @ts-ignore
+    return chrome.runtime.sendMessage({ type: "CAPTURE", rect })?.then?.(res => {
+        console.log(res);
+        return (res || { ok: false, error: "no response" });
+    })?.catch?.(err => console.warn(err));
 }
 
 //
@@ -122,67 +121,18 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             if (w < 2 || h < 2) { __snipActive = false; return; }
 
             //
-            const arrayBuffer = await captureAsPossible({ x, y, width: w, height: h })?.catch?.(err => {
+            await captureTab({ x, y, width: w, height: h })?.catch?.(err => {
                 console.warn(err);
                 return null;
             });
-            console.log(arrayBuffer);
-            if (!arrayBuffer) { __snipActive = false; return; }; //const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
 
-            // @ts-ignore
-            const data_url = `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}`;
-            if (!(await ableToShowJPEG(data_url))) { __snipActive = false; return; }
             //await navigator.clipboard.writeText(data_url);
 
             // open in new tab for debug
             //window.open(data_url, "_blank");
             //chrome.tabs.create({ url: data_url });
 
-            //
-            try {
-                const res: any = await chrome.runtime.sendMessage({ //@ts-ignore
-                    type: "gpt:recognize",
-                    input: [{
-                        role: "user",
-                        content: [ //@ts-ignore
-                            {type: "input_image", image_url: data_url, detail: "high"}
-                        ]
-                    }]
-                })?.catch?.(err => {
-                    console.warn(err);
-                    return null;
-                })?.then?.(res => {
-                    console.log(res);
-                    return res;
-                });
-
-                //
-                if (!res || !res?.data || !res?.ok) { __snipActive = false; return; }
-
-                //
-                console.log(res);
-                console.log(res?.data);
-                if (!res?.data) { __snipActive = false; return; };
-
-                //
-                /*try { await navigator.clipboard.writeText(JSON.stringify(res?.data || {})); } catch (err) {
-                    console.warn(err);
-                    toast("Error copying to clipboard");
-                }*/
-
-                const TXT = res?.data?.output?.at?.(-1)?.content?.[0]?.text;
-                if (TXT) {
-                    try { await navigator.clipboard.writeText(TXT || ""); } catch (err) {
-                        console.warn(err); toast("Error copying to clipboard");
-                    }
-                }
-
-            } catch (err) {
-                console.error(err);
-                toast("Error getting screenshot");
-            } finally {
-                __snipActive = false;
-            }
+            __snipActive = false;
         };
 
         //

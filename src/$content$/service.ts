@@ -23,3 +23,27 @@ ext.runtime.sendMessage({ type: "opened" })?.then?.((message)=> {
     console.log(message);
 });
 */
+
+
+//
+const COPY_HACK = async (data)=>{
+    console.log(data);
+    if (data) {
+        try {
+            await navigator?.clipboard?.writeText?.(data);
+            console.log('Text copied to clipboard');
+        } catch (err) {
+            console.warn('Failed to copy text: ', err);
+        }
+    }
+}
+
+//
+ext.runtime.onMessage.addListener((res, sender, sendResponse)=>{
+    (async ()=>{
+        console.log(res);
+        if (res?.type == "COPY_HACK") await COPY_HACK(res?.data);
+        sendResponse({ok: true, data: res?.data});
+    })();
+    return true;
+});

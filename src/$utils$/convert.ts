@@ -89,7 +89,13 @@ const deAlphaChannel = async (src: string)=>{
     return arrayBuffer ? `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}` : null;
 }
 
-
+//
+const $wrap$ = (katex: string)=>{
+    if (katex?.startsWith?.("$") && katex?.endsWith?.("$")) {
+        return katex;
+    }
+    return "$"+katex+"$";
+}
 
 // copy mathml DOM as tex
 // TODO! support AI recognition and conversion (from images)
@@ -146,8 +152,11 @@ export const copyAsTeX = async (target: HTMLElement)=>{
         }
     }
 
+    //
+    const resultText = $wrap$(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX);
+
     //navigator.clipboard.writeText("$"+LaTeX+"$");
-    if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX)?.catch?.((e)=> { console.warn(e); }); }
+    if (resultText) { navigator.clipboard.writeText(resultText)?.catch?.((e)=> { console.warn(e); }); }
 }
 
 // copy mathml DOM as mathml

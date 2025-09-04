@@ -47,59 +47,59 @@ const COPY_HACK = (ext, data, tabId?)=>{
 // service worker makes screenshot of visible area
 export const enableCapture = (ext) => {
     ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        //(async ()=>{
-            if (msg?.type === "CAPTURE") {
-                const windowId = sender?.tab?.windowId; //@ts-ignore
-                chrome.tabs.captureVisibleTab({ format: "png", scale: 1, rect: msg.rect ?? {x: 0, y: 0, width: 0, height: 0} }, async ($dataUrl) => { // @ts-ignore
-                    if (chrome.runtime.lastError) {
-                        console.error(chrome.runtime.lastError);
-                        sendResponse({ ok: false, error: chrome.runtime.lastError.message });
-                    } else {
-                        // @ts-ignore
-                        const bitmap = await createImageBitmap(new Blob([Uint8Array.fromBase64($dataUrl?.replace?.('data:image/png;base64,', ""), { alphabet: "base64" })], { type: "image/png" })/*, rect.x, rect.y, rect.width, rect.height*/);
-                        const arrayBuffer = await encodeWithJSquash(bitmap) // @ts-ignore
-                        const dataUrl = `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}`;
-                        //sendResponse({ ok: true, dataUrl });
-                        bitmap?.close?.();
+        if (msg?.type === "CAPTURE") {
+            const windowId = sender?.tab?.windowId; //@ts-ignore
+            chrome.tabs.captureVisibleTab({ format: "png", scale: 1, rect: msg.rect ?? {x: 0, y: 0, width: 0, height: 0} }, async ($dataUrl) => { // @ts-ignore
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                    sendResponse({ ok: false, error: chrome.runtime.lastError.message, dataUrl: $dataUrl });
+                } else {
+                    // @ts-ignore
+                    const bitmap = await createImageBitmap(new Blob([Uint8Array.fromBase64($dataUrl?.replace?.('data:image/png;base64,', ""), { alphabet: "base64" })], { type: "image/png" })/*, rect.x, rect.y, rect.width, rect.height*/);
+                    const arrayBuffer = await encodeWithJSquash(bitmap)?.catch?.(e => { console.warn(e); return null; }); bitmap?.close?.(); // @ts-ignore
+                    let dataUrl = arrayBuffer ? `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}` : $dataUrl;
 
-                        //
-                        if (!dataUrl || !(await ableToShowJPEG(dataUrl))) {
-                            sendResponse({ ok: false, error: "Unable to show JPEG" });
-                            return;
-                        }
+                    //
+                    if (!dataUrl || !(await ableToShowJPEG(dataUrl))) {
+                        //sendResponse({ ok: false, error: "Unable to show JPEG", dataUrl });
+                        dataUrl = $dataUrl;
+                    }
 
-                        //
-                        const res = await recognizeImage({ //@ts-ignore
-                            //type: "gpt:recognize",
-                            input: [{
-                                role: "user",
-                                content: [ //@ts-ignore
-                                    {type: "input_image", image_url: dataUrl, detail: "high"}
-                                ]
-                            }]
-                        });
+                    //
+                    const res = await recognizeImage({ //@ts-ignore
+                        //type: "gpt:recognize",
+                        input: [{
+                            role: "user",
+                            content: [ //@ts-ignore
+                                {type: "input_image", image_url: dataUrl, detail: "high"}
+                            ]
+                        }]
+                    });
 
-                        //
+                    //
+                    if (res?.ok) {
                         await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id)?.catch?.(console.warn.bind(console));
-                        sendResponse(res); //return res;
                     }
-                });
-            }
 
-            //
-            if (msg?.type === "DOWNLOAD" && msg.dataUrl) {
-                chrome.downloads.download(
-                    { url: msg.dataUrl, filename: "snip.png", saveAs: true },
-                    (id) => { // @ts-ignore
-                        if (chrome.runtime.lastError) {
-                            sendResponse({ ok: false, error: chrome.runtime.lastError.message });
-                        } else {
-                            sendResponse({ ok: true, id });
-                        }
+                    //
+                    sendResponse(res); //return res;
+                }
+            });
+        }
+
+        //
+        if (msg?.type === "DOWNLOAD" && msg.dataUrl) {
+            chrome.downloads.download(
+                { url: msg.dataUrl, filename: "snip.png", saveAs: true },
+                (id) => { // @ts-ignore
+                    if (chrome.runtime.lastError) {
+                        sendResponse({ ok: false, error: chrome.runtime.lastError.message, dataUrl: msg.dataUrl });
+                    } else {
+                        sendResponse({ ok: true, id });
                     }
-                );
-            }
-        //})();
+                }
+            );
+        }
         return true;
     });
 }

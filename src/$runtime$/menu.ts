@@ -67,7 +67,7 @@ export const createCtxItems = (ext)=>{
     try {
         ext?.contextMenus?.create?.({
             id: 'START_SNIP',
-            title: 'Start Snip',
+            title: 'Snip and Recognize (AI, Markdown)', //, LaTeX, JSON, contact, date, time, URL, email, phone...
             visible: true,
             contexts
         })?.catch?.(console.warn.bind(console));
@@ -77,7 +77,7 @@ export const createCtxItems = (ext)=>{
 
     //
     ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
-        if (tab?.id != null) {
+        if (tab?.id != null && tab?.id >= 0) {
             //ctxAction({"type": info.menuItemId}, {}, ()=>{});
             chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
                 console.log(message, tab.id);
@@ -85,10 +85,11 @@ export const createCtxItems = (ext)=>{
         } else {
             ext.tabs.query({
                 currentWindow: true,
+                lastFocusedWindow: true,
                 active: true,
             })?.then?.((tabs)=>{
                 for (const tab of tabs) {
-                    if (tab?.id != null) {
+                    if (tab?.id != null && tab?.id >= 0) {
                         //ctxAction({"type": info.menuItemId}, null, ()=>{});
                         chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
                             console.log(message, tab.id);

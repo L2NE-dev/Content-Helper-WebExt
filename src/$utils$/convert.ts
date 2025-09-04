@@ -66,6 +66,7 @@ export const copyAsHTML = async (target: HTMLElement)=>{ // copy markdown text a
 }
 
 // copy mathml DOM as tex
+// TODO! support AI recognition and conversion (from images)
 export const copyAsTeX = async (target: HTMLElement)=>{
     const math = bySelector(target, "math");
     const mjax = bySelector(target, "[data-mathml]");
@@ -105,6 +106,7 @@ export const copyAsTeX = async (target: HTMLElement)=>{
 }
 
 // copy mathml DOM as mathml
+// TODO! support AI recognition and conversion (from images)
 export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as mathml
     const math = bySelector(target, "math");
     const mjax = bySelector(target, "[data-mathml]");

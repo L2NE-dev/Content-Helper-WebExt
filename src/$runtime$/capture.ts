@@ -33,7 +33,7 @@ const COPY_HACK = (ext, data, tabId?)=>{
         active: true,
     })?.then?.((tabs)=>{
         for (const tab of tabs) {
-            if (tab?.id != null) {
+            if (tab?.id != null && tab?.id >= 0) {
                 //ctxAction({"type": info.menuItemId}, null, ()=>{});
                 return chrome.tabs.sendMessage?.(tab.id, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console));
             }
@@ -41,7 +41,7 @@ const COPY_HACK = (ext, data, tabId?)=>{
     })?.catch?.(console.warn.bind(console));
 
     //
-    if (tabId) { return chrome.tabs.sendMessage?.(tabId, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console)); }
+    if (tabId != null && tabId >= 0) { return chrome.tabs.sendMessage?.(tabId, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console)); }
 }
 
 

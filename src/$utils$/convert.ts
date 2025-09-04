@@ -6,6 +6,7 @@ import temml from "temml";
 import { marked } from 'marked';
 import { escapeML, bySelector, serialize, extractFromAnnotation, getContainerFromTextSelection } from './core';
 import { MathMLToLaTeX } from 'mathml-to-latex';
+import { encodeWithJSquash } from './compress';
 
 //
 const turndownService = new TurndownService();
@@ -65,6 +66,31 @@ export const copyAsHTML = async (target: HTMLElement)=>{ // copy markdown text a
     if (html?.trim()) { navigator.clipboard.writeText(html?.trim?.()?.normalize?.()?.trim?.() || html?.trim?.() || html); }
 }
 
+//
+const deAlphaChannel = async (src: string)=>{
+    const img = new Image();
+    {
+        img.crossOrigin = "Anonymous";
+        img.decoding = "async";
+        img.src = src;
+        await img.decode();
+    }
+
+    //
+    const canvas = new OffscreenCanvas(img.naturalWidth, img.naturalHeight);
+    const ctx = canvas.getContext("2d");
+    ctx!.fillStyle = "white";
+    ctx?.fillRect(0, 0, canvas.width, canvas.height);
+    ctx?.drawImage(img, 0, 0);
+    const imgData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+    const arrayBuffer = await encodeWithJSquash(imgData);
+
+    // @ts-ignore
+    return arrayBuffer ? `data:image/jpeg;base64,${new Uint8Array(arrayBuffer)?.toBase64?.({ alphabet: "base64" })}` : null;
+}
+
+
+
 // copy mathml DOM as tex
 // TODO! support AI recognition and conversion (from images)
 export const copyAsTeX = async (target: HTMLElement)=>{
@@ -73,6 +99,7 @@ export const copyAsTeX = async (target: HTMLElement)=>{
     const orig = bySelector(target, "[data-original]");
     const expr = bySelector(target, "[data-expr]");
     const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
+    const forRecognition: any = bySelector(target, "img:is([src],[srcset]), picture:has(img)");
 
     //
     let LaTeX = img?.getAttribute("alt") || getSelection()?.toString?.() || "";
@@ -101,6 +128,24 @@ export const copyAsTeX = async (target: HTMLElement)=>{
     try { LaTeX = MathMLToLaTeX.convert(LaTeX); } catch (e) { LaTeX = ""; console.warn(e); }
     LaTeX ||= original;
 
+    // try AI recognition if is image with URL in src or srcset
+    if (!LaTeX && forRecognition) {
+        const img = new URL(forRecognition?.currentSrc || forRecognition?.src || forRecognition?.getAttribute?.("src"), window?.location?.origin)?.href;
+        const dataUrl = img ? await deAlphaChannel(img) : null;
+        if (dataUrl) {
+            const res = await chrome.runtime.sendMessage({
+                type: "gpt:recognize",
+                input: [{
+                    role: "user",
+                    content: [
+                        { type: "input_image", image_url: dataUrl, detail: "high" }
+                    ]
+                }]
+            });
+            LaTeX = res?.data?.output?.at?.(-1)?.content?.[0]?.text || LaTeX;
+        }
+    }
+
     //navigator.clipboard.writeText("$"+LaTeX+"$");
     if (LaTeX?.trim()) { navigator.clipboard.writeText(LaTeX?.trim?.()?.normalize?.()?.trim?.() || LaTeX?.trim?.() || LaTeX)?.catch?.((e)=> { console.warn(e); }); }
 }
@@ -113,6 +158,7 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
     const orig = bySelector(target, "[data-original]");
     const expr = bySelector(target, "[data-expr]");
     const img  = bySelector(target, ".mwe-math-fallback-image-inline[alt], .mwe-math-fallback-image-display[alt]");
+    const forRecognition: any = bySelector(target, "img:is([src],[srcset]), picture:has(img)");
 
     //
     let mathML = img?.getAttribute?.("alt") || "" || "";
@@ -138,6 +184,8 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
 
     //
     const original = mathML;
+
+    //
     if (!(mathML?.trim()?.startsWith?.("<") && mathML?.trim()?.endsWith?.(">"))) {
         try { mathML = escapeML(temml.renderToString(mathML, {
             throwOnError: true,
@@ -146,6 +194,9 @@ export const copyAsMathML = async (target: HTMLElement)=>{ // copy mathml DOM as
         }) || "") || mathML; } catch (e) { mathML = ""; console.warn(e); }
     }
     mathML ||= original;
+
+    // TODO! our recognition instruction won't support MathML, due KaTeX priority
+    // TODO: Add AI recognition and conversion (from images), and use it if not MathML
 
     //
     if (mathML?.trim()) { navigator.clipboard.writeText(mathML?.trim?.()?.normalize?.()?.trim?.() || mathML?.trim?.() || mathML)?.catch?.((e)=> { console.warn(e); }); }

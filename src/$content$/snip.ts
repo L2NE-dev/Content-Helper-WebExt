@@ -7,7 +7,6 @@ let __snipActive = false;
 // use chrome API to capture tab visible area
 const captureTab = (rect?: cropArea) => { // @ts-ignore
     return chrome.runtime.sendMessage({ type: "CAPTURE", rect })?.then?.(res => {
-        console.log(res);
         return (res || { ok: false, error: "no response" });
     })?.catch?.(err => console.warn(err));
 }
@@ -19,7 +18,6 @@ export const startSnip = (() => { // @ts-ignore
 
     //
     chrome.runtime.onMessage.addListener((msg) => {
-        console.log(msg?.type);
         if (msg?.type === "START_SNIP") startSnip();
     });
 
@@ -112,7 +110,6 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             const y = Math.min(startY, currY);
             const w = Math.abs(currX - startX);
             const h = Math.abs(currY - startY);
-            console.log(x, y, w, h);
 
             //
             cleanupOverlayKeepFlag();

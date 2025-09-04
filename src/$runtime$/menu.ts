@@ -79,9 +79,9 @@ export const createCtxItems = (ext)=>{
     ext?.contextMenus?.onClicked?.addListener?.((info, tab) => {
         if (tab?.id != null && tab?.id >= 0) {
             //ctxAction({"type": info.menuItemId}, {}, ()=>{});
-            chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
+            /*chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
                 console.log(message, tab.id);
-            });
+            });*/
         } else {
             ext.tabs.query({
                 currentWindow: true,
@@ -91,9 +91,9 @@ export const createCtxItems = (ext)=>{
                 for (const tab of tabs) {
                     if (tab?.id != null && tab?.id >= 0) {
                         //ctxAction({"type": info.menuItemId}, null, ()=>{});
-                        chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
+                        /*chrome.tabs.sendMessage?.(tab.id, { type: info.menuItemId })?.then?.((message)=> {
                             console.log(message, tab.id);
-                        });
+                        });*/
                     }
                 }
             })?.catch?.(console.warn.bind(console));

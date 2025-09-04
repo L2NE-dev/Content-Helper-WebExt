@@ -4,7 +4,6 @@ import { opMap } from "./operations";
 
 // action for context menu
 export const ctxAction = (request, sender, $resolve$)=>{
-    console.log(request.type);
     if (opMap.has(request.type)) {
         const element = lastElement?.[0] || document.elementFromPoint(...coordinate);
         if (element) { opMap.get(request.type)?.(element as HTMLElement); };
@@ -27,7 +26,6 @@ ext.runtime.sendMessage({ type: "opened" })?.then?.((message)=> {
 
 //
 const COPY_HACK = async (data)=>{
-    console.log(data);
     if (data) {
         try {
             await navigator?.clipboard?.writeText?.(data);
@@ -41,7 +39,6 @@ const COPY_HACK = async (data)=>{
 //
 ext.runtime.onMessage.addListener((res, sender, sendResponse)=>{
     (async ()=>{
-        console.log(res);
         if (res?.type == "COPY_HACK") await COPY_HACK(res?.data);
         sendResponse({ok: true, data: res?.data});
     })();

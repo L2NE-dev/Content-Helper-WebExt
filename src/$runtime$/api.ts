@@ -32,7 +32,7 @@ If nothing found, return "No data recognized".
 //
 export const recognizeImage = async (msg, sendResponse?) => {
     const { input } = msg;
-    const token = (await chrome.storage.local.get('apiKey'))?.apiKey; console.log(token);
+    const token = (await chrome.storage.local.get('apiKey'))?.apiKey;
     if (!token) return sendResponse?.({ ok: false, error: "No API key" });
 
     //

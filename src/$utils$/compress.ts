@@ -7,7 +7,10 @@ export type cropArea = { x: number, y: number, width: number, height: number }
 export const jpegConfig = { quality: 90, progressive: false, color_space: 2, optimize_coding: true, auto_subsample: true, baseline: true };
 
 //
-export const encodeWithJSquash = async (frameData: VideoFrame|ImageBitmap, rect?: cropArea)=>{
+export const encodeWithJSquash = async (frameData?: VideoFrame|ImageBitmap|ImageData|null, rect?: cropArea)=>{
+    if (!frameData) return null;
+
+    //
     const imageDataOptions: ImageDataSettings = {
         colorSpace: "srgb",
     }
@@ -16,6 +19,9 @@ export const encodeWithJSquash = async (frameData: VideoFrame|ImageBitmap, rect?
     rect ??= { x: 0, y: 0, width: frameData?.width || frameData?.codedWidth || 0, height: frameData?.height || frameData?.codedHeight || 0 };
 
     //
+    if (frameData instanceof ImageData) {
+        return encode(frameData, jpegConfig);
+    } else
     if (frameData instanceof ImageBitmap) {
         const cnv = new OffscreenCanvas(rect.width, rect.height);
         const ctx = cnv.getContext("2d");

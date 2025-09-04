@@ -49,10 +49,10 @@ const COPY_HACK = (ext, data, tabId?)=>{
 // service worker makes screenshot of visible area
 export const enableCapture = (ext) => {
     ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        if (msg?.type === "CAPTURE") {
-            const windowId = sender?.tab?.windowId; //@ts-ignore
-            chrome.tabs.captureVisibleTab({ format: "png", scale: 1, rect: msg.rect ?? {x: 0, y: 0, width: 0, height: 0} },
-                async ($dataUrl) => { // @ts-ignore
+        //(async ()=>{
+            if (msg?.type === "CAPTURE") {
+                const windowId = sender?.tab?.windowId; //@ts-ignore
+                chrome.tabs.captureVisibleTab({ format: "png", scale: 1, rect: msg.rect ?? {x: 0, y: 0, width: 0, height: 0} }, async ($dataUrl) => { // @ts-ignore
                     if (chrome.runtime.lastError) {
                         console.error(chrome.runtime.lastError);
                         sendResponse({ ok: false, error: chrome.runtime.lastError.message });
@@ -83,26 +83,25 @@ export const enableCapture = (ext) => {
 
                         //
                         await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id)?.catch?.(console.warn.bind(console));
-                        sendResponse(res); return res;
+                        sendResponse(res); //return res;
                     }
-                }
-            );
-            return true; // leave port open for async response
-        }
+                });
+            }
 
-        //
-        if (msg?.type === "DOWNLOAD" && msg.dataUrl) {
-            chrome.downloads.download(
-                { url: msg.dataUrl, filename: "snip.png", saveAs: true },
-                (id) => { // @ts-ignore
-                    if (chrome.runtime.lastError) {
-                        sendResponse({ ok: false, error: chrome.runtime.lastError.message });
-                    } else {
-                        sendResponse({ ok: true, id });
+            //
+            if (msg?.type === "DOWNLOAD" && msg.dataUrl) {
+                chrome.downloads.download(
+                    { url: msg.dataUrl, filename: "snip.png", saveAs: true },
+                    (id) => { // @ts-ignore
+                        if (chrome.runtime.lastError) {
+                            sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+                        } else {
+                            sendResponse({ ok: true, id });
+                        }
                     }
-                }
-            );
-            return true;
-        }
+                );
+            }
+        //})();
+        return true;
     });
 }

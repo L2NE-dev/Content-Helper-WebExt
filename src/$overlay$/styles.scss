@@ -1,0 +1,149 @@
+@layer webext-overlay {
+    .sel-dom-overlay::backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .25);
+        pointer-events: auto;
+        user-drag: none;
+        -webkit-user-drag: none;
+        cursor: crosshair;
+        display: block;
+        border: none;
+        outline: none;
+    }
+
+    .sel-dom-overlay {
+        display: none;
+        box-sizing: border-box;
+        inline-size: 100cqi;
+        block-size: 100cqb;
+        overflow: hidden;
+    }
+
+    .sel-dom-overlay:not(:popover-open) {
+        display: none;
+
+        & * {
+            display: none;
+        }
+    }
+
+    .sel-dom-overlay:popover-open {
+        position: fixed;
+        inset: 0;
+        background: transparent;
+        background-color: transparent;
+        background-image: none;
+        user-select: none;
+        -webkit-user-select: none;
+        user-drag: none;
+        -webkit-user-drag: none;
+        pointer-events: auto;
+        overflow: hidden;
+        cursor: crosshair;
+        z-index: 2;
+        display: block;
+        border: none;
+        outline: none;
+        inline-size: 100cqi;
+        block-size: 100cqb;
+        box-sizing: border-box;
+    }
+
+    .sel-dom-box {
+        overflow: visible;
+        position: fixed;
+        border: 1px solid #4da3ff;
+        background: rgba(77, 163, 255, .2);
+        pointer-events: none;
+        user-drag: none;
+        -webkit-user-drag: none;
+        box-sizing: border-box;
+    }
+
+    .sel-dom-hint {
+        position: absolute;
+        background: rgba(0, 0, 0, .6);
+        color: #fff;
+        font: 12px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        padding: 6px 8px;
+        border-radius: 6px;
+        pointer-events: none;
+        user-drag: none;
+        -webkit-user-drag: none;
+        inline-size: max-content;
+        block-size: max-content;
+
+        // make center
+        inset: 50% auto auto 50%;
+        transform: translate(-10px, -10px) translate(-50%, -50%);
+    }
+
+    .sel-dom-hint:empty {
+        display: none;
+    }
+
+    .sel-dom-size-badge {
+        position: absolute;
+        transform: translate(-0%, -0%);
+        background: #1f2937;
+        color: #fff;
+        font: 12px/1.4 system-ui;
+        padding: 2px 6px;
+        border-radius: 4px;
+        pointer-events: none;
+        user-drag: none;
+        -webkit-user-drag: none;
+        inline-size: max-content;
+        block-size: max-content;
+        z-index: 3;
+    }
+
+    .sel-dom-size-badge:empty {
+        display: none;
+        inset-inline-start: 0;
+        inset-block-start: 0;
+        inline-size: 0;
+        block-size: 0;
+    }
+
+    .sel-dom-toast {
+        opacity: 0;
+        display: none;
+        box-sizing: border-box;
+        overflow: visible;
+        position: fixed;
+        inset: auto 50% auto 50%;
+        inset-block-end: 16px;
+        transform: translate(-50%, -100%);
+        background: rgba(0,0,0,.8); color: #fff; padding: 8px 12px;
+        border-radius: 8px; font: 12px/1.4 system-ui;
+        pointer-events: none;
+        user-drag: none;
+        -webkit-user-drag: none;
+        inline-size: max-content;
+        block-size: max-content;
+        z-index: 2147483647;
+
+        transition-behavior: allow-discrete;
+        transition-duration: 200ms;
+        transition-property: opacity, display;
+        transition-timing-function: ease-in-out;
+        transition-delay: 0ms;
+    }
+
+    .sel-dom-toast:not(:empty)/*, .sel-dom-toast.is-visible*/ {
+        display: block;
+        opacity: 1;
+
+        // for transition
+        @starting-style {
+            opacity: 0;
+        }
+    }
+
+    .sel-dom-toast:empty:not(.is-visible), .sel-dom-toast:not(.is-visible) {
+        display: none;
+        opacity: 0;
+    }
+}

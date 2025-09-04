@@ -28,7 +28,9 @@ ext.runtime.sendMessage({ type: "opened" })?.then?.((message)=> {
 const COPY_HACK = async (data)=>{
     if (data) {
         try {
-            await navigator?.clipboard?.writeText?.(data);
+            await navigator?.clipboard?.writeText?.(data)?.catch?.(err => {
+                console.warn('Failed to copy text: ', err);
+            });
             console.log('Text copied to clipboard');
         } catch (err) {
             console.warn('Failed to copy text: ', err);

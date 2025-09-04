@@ -20,4 +20,13 @@ export default {
 		sourcemap: "hidden",
 		target: "esnext",
 	},
+	css: {
+		scss: {
+			api: "modern",
+		},
+		preprocessorOptions: {
+			scss: {
+			},
+		},
+	},
 };

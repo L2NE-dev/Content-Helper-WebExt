@@ -1,4 +1,5 @@
 import type { cropArea } from "../$utils$/compress";
+import { selDom } from "../$overlay$/sel-dom";
 
 //
 let __snipInjected = false;
@@ -22,55 +23,18 @@ export const startSnip = (() => { // @ts-ignore
     });
 
     //
+    const { overlay,box, hint, sizeBadge, showSelection, hideSelection, showToast } = selDom();
+    document.documentElement.append(overlay);
+
+    //
     function startSnip() {
         if (__snipActive) return;
-        __snipActive = true;
-
-        //
-        const overlay = document.createElement("div");
-        overlay.draggable = false;
-        overlay.style.cssText = `
-position: fixed; inset: 0; z-index: 2147483647;
-cursor: crosshair; background: rgba(0,0,0,.25);
-user-select: none; -webkit-user-select: none; user-drag: none; -webkit-user-drag: none;`;
-        overlay.tabIndex = -1;
-
-        //
-        const box = document.createElement("div");
-        box.style.cssText = `
-position: absolute; border: 1px solid #4da3ff;
-background: rgba(77,163,255,.2);
-pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
-
-        //
-        const hint = document.createElement("div");
-        hint.style.cssText = `
-position: fixed; top: 10px; right: 10px;
-background: rgba(0,0,0,.6); color: #fff;
-font: 12px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-padding: 6px 8px; border-radius: 6px; pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
-        hint.textContent = "Select area. Esc — cancel";
-
-        //
-        const sizeBadge = document.createElement("div");
-        sizeBadge.style.cssText = `
-position: absolute; transform: translateY(-100%);
-background: #1f2937; color: #fff; font: 12px/1.4 system-ui;
-padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -webkit-user-drag: none;`;
-
-        //
-        overlay.appendChild(box);
-        overlay.appendChild(hint);
-        document.documentElement.appendChild(overlay);
-        overlay.focus();
-
-        //
         let startX = 0, startY = 0, currX = 0, currY = 0, dragging = false;
 
         //
         const onKeyDown = (e) => { if (e.key === "Escape") cleanup(); };
         const onMouseDown = (e) => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || !__snipActive) return;
             e.preventDefault();
             dragging = true;
             startX = e.clientX;
@@ -78,6 +42,12 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             currX = startX;
             currY = startY;
             updateBox();
+
+            // hide hint when process begin
+            hint.textContent = "";
+            sizeBadge.textContent = "";
+
+            //
             document.addEventListener("mousemove", onMouseMove, true);
             document.addEventListener("mouseup", onMouseUp, true);
             document.addEventListener("mousecancel", onMouseCancel, true);
@@ -97,6 +67,7 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             document.removeEventListener("mousemove", onMouseMove, true);
             document.removeEventListener("mouseup", onMouseUp, true);
             document.removeEventListener("mousecancel", onMouseCancel, true);
+            cleanupOverlayKeepFlag();
         };
 
         //
@@ -104,6 +75,7 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             if (!dragging) return; dragging = false;
             document.removeEventListener("mousemove", onMouseMove, true);
             document.removeEventListener("mouseup", onMouseUp, true);
+            document.removeEventListener("mousecancel", onMouseCancel, true);
 
             //
             const x = Math.min(startX, currX);
@@ -113,23 +85,23 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
 
             //
             cleanupOverlayKeepFlag();
+            if (w < 2 || h < 2) { showToast("Selection is too small"); return; }
 
             //
-            if (w < 2 || h < 2) { __snipActive = false; return; }
-
-            //
-            await captureTab({ x, y, width: w, height: h })?.catch?.(err => {
+            const res = await captureTab({ x, y, width: w, height: h })?.catch?.(err => {
                 console.warn(err);
+                showToast("Failed to capture tab");
                 return null;
             });
+
+            //
+            if (res?.ok) showToast("Copying is done!");
 
             //await navigator.clipboard.writeText(data_url);
 
             // open in new tab for debug
             //window.open(data_url, "_blank");
             //chrome.tabs.create({ url: data_url });
-
-            __snipActive = false;
         };
 
         //
@@ -138,44 +110,49 @@ padding: 2px 6px; border-radius: 4px; pointer-events: none; user-drag: none; -we
             const y = Math.min(startY, currY);
             const w = Math.abs(currX - startX);
             const h = Math.abs(currY - startY);
+
+            //
             box.style.left = x + "px";
             box.style.top = y + "px";
             box.style.width = w + "px";
             box.style.height = h + "px";
 
+            //
             sizeBadge.textContent = `${Math.max(0, Math.round(w))} × ${Math.max(0, Math.round(h))}`;
             if (!sizeBadge.isConnected) box.appendChild(sizeBadge);
-            sizeBadge.style.left = "0px";
-            sizeBadge.style.top = "0px";
+
+            //
+            //sizeBadge.style.left = (x /*+ w*/) + "px";
+            //sizeBadge.style.top = (y /*+ h*/) + "px";
+            sizeBadge.style.left = w + "px";
+            sizeBadge.style.top = h + "px";
         }
 
         //
         function cleanupOverlayKeepFlag() {
+            hideSelection();
+            __snipActive = false;
+            dragging = false;
             document.removeEventListener("keydown", onKeyDown, true);
-            overlay.removeEventListener("mousedown", onMouseDown, true);
-            overlay.remove();
+            document.removeEventListener("mousemove", onMouseMove, true);
+            document.removeEventListener("mouseup", onMouseUp, true);
+            document.removeEventListener("mousecancel", onMouseCancel, true);
         }
 
         //
         function cleanup() {
             cleanupOverlayKeepFlag();
-            __snipActive = false;
         }
 
         //
-        function toast(text) {
-            const t = document.createElement("div");
-            t.textContent = text;
-            t.style.cssText = `
-position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-background: rgba(0,0,0,.8); color: #fff; padding: 8px 12px;
-border-radius: 8px; font: 12px/1.4 system-ui; z-index: 2147483647;`;
-            document.documentElement.appendChild(t);
-            setTimeout(() => t.remove(), 1800);
-        }
-
-        //
-        overlay.addEventListener("mousedown", onMouseDown, true);
         document.addEventListener("keydown", onKeyDown, true);
+        document.addEventListener("mousedown", onMouseDown, true);
+        document.addEventListener("mouseup", onMouseUp, true);
+
+        //
+        __snipActive = true;
+        showSelection();
+        hint.textContent = "Select area. Esc — cancel";
+        sizeBadge.textContent = "";
     }
 })();

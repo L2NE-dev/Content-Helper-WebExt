@@ -1,5 +1,5 @@
 import type { cropArea } from "../$utils$/compress";
-import { selDom } from "../$overlay$/sel-dom";
+import { box, hideSelection, hint, selDom, showSelection, showToast, sizeBadge } from "../$overlay$/sel-dom";
 
 //
 let __snipInjected = false;
@@ -12,6 +12,8 @@ const captureTab = (rect?: cropArea) => { // @ts-ignore
     })?.catch?.(err => console.warn(err));
 }
 
+//showToast(res?.ok ? "Copying is done" : (res?.error || "Failed to copy"));
+
 //
 export const startSnip = (() => { // @ts-ignore
     if (__snipInjected) return;
@@ -21,10 +23,6 @@ export const startSnip = (() => { // @ts-ignore
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg?.type === "START_SNIP") startSnip();
     });
-
-    //
-    const { overlay,box, hint, sizeBadge, showSelection, hideSelection, showToast } = selDom();
-    document.documentElement.append(overlay);
 
     //
     function startSnip() {
@@ -93,9 +91,6 @@ export const startSnip = (() => { // @ts-ignore
                 showToast("Failed to capture tab");
                 return null;
             });
-
-            //
-            showToast(res?.ok ? "Copying is done" : (res?.error || "Failed to copy"));
 
             //await navigator.clipboard.writeText(data_url);
 

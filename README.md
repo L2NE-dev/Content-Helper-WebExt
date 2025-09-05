@@ -1,7 +1,11 @@
-# Chrome-latex-copy
+# Content Helper Chrome Extension
 
-Copy LaTeX math from some resources, such as MathWay
+Powerful utility for working with content in one extension (for Chrome and Edge)...
 
-Test here:
+## Features
 
-$\displaystyle\lim\limits_{x\to0}{\frac{\ln\left({1+3\arcsin{7x}}\right)}{e^{\sqrt{1+2x}-1}-1}}$
+- KaTeX copy
+- MathML copy
+- HTML copy
+- Markdown copy
+- AI image content recognition

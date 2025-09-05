@@ -1,3 +1,4 @@
+import { showToast } from "../$overlay$/sel-dom";
 import { ext } from "../$utils$/core";
 import { coordinate, lastElement } from "../$utils$/state";
 import { opMap } from "./operations";
@@ -23,7 +24,6 @@ ext.runtime.sendMessage({ type: "opened" })?.then?.((message)=> {
 });
 */
 
-
 //
 const COPY_HACK = async (data)=>{
     if (data) {
@@ -41,8 +41,11 @@ const COPY_HACK = async (data)=>{
 //
 ext.runtime.onMessage.addListener((res, sender, sendResponse)=>{
     (async ()=>{
-        if (res?.type == "COPY_HACK") await COPY_HACK(res?.data);
-        sendResponse({ok: true, data: res?.data});
+        if (res?.type == "COPY_HACK") {
+            await COPY_HACK(res?.data);
+            sendResponse({ok: res?.ok ?? true, data: res?.data});
+            showToast(res?.ok ? "Copying is done" : (res?.error || "Failed to copy"));
+        }
     })();
     return true;
 });

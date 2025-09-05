@@ -95,3 +95,7 @@ export const selDom = () => {
 
 //
 export default selDom;
+
+//
+export const { overlay, box, hint, sizeBadge, showSelection, hideSelection, showToast } = selDom();
+document?.documentElement?.append?.(overlay);

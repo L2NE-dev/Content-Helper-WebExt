@@ -33,13 +33,13 @@ const COPY_HACK = (ext, data, tabId?)=>{
         for (const tab of tabs) {
             if (tab?.id != null && tab?.id >= 0) {
                 //ctxAction({"type": info.menuItemId}, null, ()=>{});
-                return chrome.tabs.sendMessage?.(tab.id, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console));
+                return chrome.tabs.sendMessage?.(tab.id, { type: "COPY_HACK", ...data })?.catch?.(console.warn.bind(console));
             }
         }
     })?.catch?.(console.warn.bind(console));
 
     //
-    if (tabId != null && tabId >= 0) { return chrome.tabs.sendMessage?.(tabId, { type: "COPY_HACK", data })?.catch?.(console.warn.bind(console)); }
+    if (tabId != null && tabId >= 0) { return chrome.tabs.sendMessage?.(tabId, { type: "COPY_HACK", ...data })?.catch?.(console.warn.bind(console)); }
 }
 
 
@@ -78,7 +78,11 @@ export const enableCapture = (ext) => {
 
                     //
                     if (res?.ok) {
-                        await COPY_HACK(ext, res?.data?.output?.at?.(-1)?.content?.[0]?.text, sender?.tab?.id)?.catch?.(console.warn.bind(console));
+                        await COPY_HACK(ext, {
+                            data: res?.data?.output?.at?.(-1)?.content?.[0]?.text?.trim?.(),
+                            ok: res?.ok,
+                            error: res?.error
+                        }, sender?.tab?.id)?.catch?.(console.warn.bind(console));
                     }
 
                     //

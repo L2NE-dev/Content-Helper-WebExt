@@ -1,22 +1,37 @@
 @layer webext-popup {
+
     html, body {
-        margin: 0;
-        padding: 0;
-        border: none;
-        outline: none;
-        box-sizing: border-box;
+        /* layout */
+        & {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* visuals */
+        & {
+            border: none;
+            outline: none;
+        }
     }
 
     :where(*) {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        border: none;
-        outline: none;
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-user-drag: none;
-        cursor: default;
+        /* box model */
+        & {
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* interaction */
+        & {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+            cursor: default;
+        }
     }
 
     html {
@@ -25,158 +40,240 @@
     }
 
     body {
-        font: 14px/1.4 system-ui;
-        inline-size: max-content;
-        block-size: max-content;
-        min-inline-size: 330px;
-        background: transparent;
-        background-color: transparent;
-        background-image: none;
+        /* typography */
+        & {
+            font: 14px/1.4 system-ui;
+        }
+
+        /* sizing/layout */
+        & {
+            inline-size: max-content;
+            block-size: max-content;
+            min-inline-size: 330px;
+        }
+
+        /* background */
+        & {
+            background: transparent;
+            background-color: transparent;
+            background-image: none;
+        }
     }
 
     #app {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+        /* spacing */
+        & {
+            padding: 16px;
+            gap: 16px;
+        }
 
-        place-content: center;
-        place-items: center;
-        text-align: start;
+        /* layout */
+        & {
+            display: flex;
+            flex-direction: column;
+            place-content: center;
+            place-items: center;
+        }
+
+        /* text */
+        & {
+            text-align: start;
+        }
     }
 
     h1 {
-        display: flex;
-        flex-direction: row;
-        place-content: center;
-        place-items: center;
+        /* layout */
+        & {
+            display: flex;
+            flex-direction: row;
+            place-content: center;
+            place-items: center;
+        }
 
-        text-wrap: nowrap;
-        word-break: keep-all;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        /* text overflow */
+        & {
+            text-wrap: nowrap;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        inline-size: stretch;
-        block-size: max-content;
+        /* sizing */
+        & {
+            inline-size: stretch;
+            block-size: max-content;
+        }
 
-        font: inherit;
-        font-size: 24px;
-        font-weight: 600;
-        text-align: center;
+        /* typography */
+        & {
+            font: inherit;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+        }
     }
 
     section {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        /* layout */
+        & {
+            display: flex;
+            flex-direction: column;
+            place-content: center;
+            place-items: center;
+        }
 
-        //
-        place-content: center;
-        place-items: center;
+        /* spacing */
+        & {
+            gap: 8px;
+        }
 
-        //
-        inline-size: stretch;
-        block-size: max-content;
+        /* sizing */
+        & {
+            inline-size: stretch;
+            block-size: max-content;
+        }
     }
 
     ul {
-        display: grid;
-        grid-template-columns: [label] minmax(0px, max-content) [input] minmax(0px, 1fr) [checkbox] minmax(0px, max-content);
-        grid-auto-flow: row;
-        grid-auto-rows: max-content;
+        /* layout */
+        & {
+            display: grid;
+            grid-template-columns: [label] minmax(0px, max-content) [input] minmax(0px, 1fr) [checkbox] minmax(0px, max-content);
+            grid-auto-flow: row;
+            grid-auto-rows: max-content;
+            place-content: center;
+            place-items: center;
+        }
 
-        gap: 8px;
+        /* spacing/text */
+        & {
+            gap: 8px;
+            text-align: center;
+        }
 
-        inline-size: stretch;
-        block-size: max-content;
-        text-align: center;
-
-        place-content: center;
-        place-items: center;
+        /* sizing */
+        & {
+            inline-size: stretch;
+            block-size: max-content;
+        }
     }
 
     li {
-        display: grid;
-        flex-direction: row;
-        gap: 4px;
+        /* spacing/text */
+        & {
+            gap: 4px;
+            text-align: center;
+        }
 
-        grid-column: 1 / -1;
-        grid-row: auto;
-        grid-template-columns: subgrid;
+        /* layout */
+        & {
+            display: grid;
+            flex-direction: row;
+            grid-column: 1 / -1;
+            grid-row: auto;
+            grid-template-columns: subgrid;
+            place-content: center;
+            place-items: center;
+        }
 
-        inline-size: stretch;
-        block-size: max-content;
-        text-align: center;
-
-        place-content: center;
-        place-items: center;
+        /* sizing */
+        & {
+            inline-size: stretch;
+            block-size: max-content;
+        }
 
         // is has no 3rd child
         &:not(:has(:nth-child(3))) {
+
             // input should span 2 columns
-            input[type="url"], input[type="password"], input[type="text"] {
+            input[type="url"],
+            input[type="password"],
+            input[type="text"] {
                 grid-column: 2 / 3 span;
             }
         }
     }
 
     label {
-        font-size: 14px;
-        font-weight: 600;
+        /* grid placement */
+        & {
+            grid-column: label;
+            grid-row: auto;
+        }
 
-        grid-column: label;
-        grid-row: auto;
+        /* typography */
+        & {
+            font-size: 14px;
+            font-weight: 600;
+            text-wrap: nowrap;
+            word-break: keep-all;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            flex-basis: max-content;
+            text-align: start;
+        }
 
-        text-wrap: nowrap;
-        word-break: keep-all;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex-basis: max-content;
-        min-inline-size: max-content;
-        inline-size: max-content;
-        block-size: max-content;
-        max-inline-size: stretch;
-        text-align: start;
+        /* sizing/overflow */
+        & {
+            overflow: hidden;
+            min-inline-size: max-content;
+            inline-size: max-content;
+            block-size: max-content;
+            max-inline-size: stretch;
+        }
     }
 
     input[type="checkbox"] {
-        grid-column: checkbox;
-        grid-row: auto;
+        /* layout/placement */
+        & {
+            display: flex;
+            grid-column: checkbox;
+            grid-row: auto;
+            place-content: center;
+            place-items: center;
+        }
 
-        border: none;
-        outline: none;
-        background: #f5f5f5;
-        color: #000;
-        font: 14px/1.4 system-ui;
-        cursor: pointer;
-        display: flex;
-        border-radius: 4px;
-        padding: 2px;
-        inline-size: 1.5rem;
-        block-size: 1.5rem;
-        max-inline-size: stretch;
-        text-align: start;
-        box-sizing: border-box;
-        aspect-ratio: 1 / 1;
+        /* colors/visuals */
+        & {
+            background: #f5f5f5;
+            color: #000;
+            border: none;
+            outline: none;
+        }
 
-        place-content: center;
-        place-items: center;
+        /* typography/interaction */
+        & {
+            font: 14px/1.4 system-ui;
+            cursor: pointer;
+            text-align: start;
+        }
 
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        overflow: hidden;
-        contain: strict;
+        /* box model / sizing */
+        & {
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+            border-radius: 4px;
+            padding: 2px;
+            max-inline-size: stretch;
+            inline-size: 1.5rem;
+            block-size: 1.5rem;
+            line-height: 0;
+            overflow: hidden;
+            contain: strict;
+        }
 
-        line-height: 0;
+        /* native appearance */
+        & {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
 
-        //
+        /* pseudo-element for icon */
         &::before {
             content: "";
             content: var(--for-show-icon, "");
-
             line-height: 0;
 
             display: flex;
@@ -186,7 +283,6 @@
 
             inline-size: stretch;
             block-size: stretch;
-
             max-inline-size: stretch;
             max-block-size: stretch;
             box-sizing: border-box;
@@ -202,65 +298,92 @@
             overflow: hidden;
         }
 
-        //
         &:checked {
-            background: #000;
-            color: #fff;
-            fill: #fff;
-            stroke: #fff;
+            /* checked colors */
+            & {
+                background: #000;
+                color: #fff;
+                fill: #fff;
+                stroke: #fff;
+            }
 
-            //
             &::before {
                 content: "✓";
                 content: var(--for-hide-icon, "✓");
             }
         }
 
-        //
         &:focus-visible {
             box-shadow: 0 0 3px #0005;
         }
 
-        //
         &:focus {
             box-shadow: 0 0 3px #0006;
         }
     }
 
-    input[type="url"], input[type="password"], input[type="text"] {
-        grid-column: input;
-        grid-row: auto;
-        user-select: text;
-        -webkit-user-select: text;
-        -webkit-user-drag: text;
-        pointer-events: auto;
+    input[type="url"],
+    input[type="password"],
+    input[type="text"] {
+        /* grid placement */
+        & {
+            grid-column: input;
+            grid-row: auto;
+        }
 
-        text-align: start;
-        inline-size: stretch;
-        block-size: max-content;
-        padding: 8px 8px;
-        border-radius: 4px;
-        border: none;
-        background: #f5f5f5;
-        color: #000;
-        font: 14px/1.4 system-ui;
-        cursor: text;
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
+        /* spacing / visuals */
+        & {
+            gap: 8px;
+            padding: 8px 8px;
+            border-radius: 4px;
+            border: none;
+            background: #f5f5f5;
+            color: #000;
+        }
 
-        text-wrap: nowrap;
-        word-break: keep-all;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        /* sizing */
+        & {
+            inline-size: stretch;
+            block-size: max-content;
+        }
 
-        font-family: monospace;
-        font-size: 10px;
+        /* interaction */
+        & {
+            cursor: text;
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-user-drag: text;
+            pointer-events: auto;
+        }
 
-        text-spacing-trim: normal;
-        text-spacing-trim: trim-start;
-        text-spacing-trim: trim-both;
+        /* layout */
+        & {
+            display: flex;
+            flex-direction: row;
+        }
+
+        /* text overflow */
+        & {
+            text-align: start;
+            text-wrap: nowrap;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* typography */
+        & {
+            font: 14px/1.4 system-ui;
+            font-family: monospace;
+            font-size: 10px;
+        }
+
+        & {
+            text-spacing-trim: normal;
+            text-spacing-trim: trim-start;
+            text-spacing-trim: trim-both;
+        }
 
         &:focus-visible {
             box-shadow: 0 0 3px #0005 inset;
@@ -272,30 +395,46 @@
     }
 
     button {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: none;
-        background: #000;
-        color: #fff;
-        font: 14px/1.4 system-ui;
-        cursor: pointer;
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
+        /* spacing / box */
+        & {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            gap: 8px;
+        }
 
-        place-content: center;
-        place-items: center;
+        /* colors / typography */
+        & {
+            background: #000;
+            color: #fff;
+            font: 14px/1.4 system-ui;
+            cursor: pointer;
+        }
 
-        text-wrap: nowrap;
-        word-break: keep-all;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        /* layout */
+        & {
+            display: flex;
+            flex-direction: row;
+            place-content: center;
+            place-items: center;
+        }
 
-        inline-size: max-content;
-        max-inline-size: stretch;
-        block-size: max-content;
-        text-align: center;
+        /* text overflow */
+        & {
+            text-align: center;
+            text-wrap: nowrap;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* sizing */
+        & {
+            inline-size: max-content;
+            max-inline-size: stretch;
+            block-size: max-content;
+        }
 
         &:focus-visible {
             outline: 1px solid #fff5;
@@ -309,5 +448,4 @@
             box-shadow: 0 0 3px #0006;
         }
     }
-
 }
